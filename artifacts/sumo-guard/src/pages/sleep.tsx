@@ -25,7 +25,7 @@ export default function SleepLogs() {
   const deleteMutation = useDeleteSleepLog();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<SleepForm>({
+  const { register, handleSubmit, reset } = useForm<SleepForm>({
     resolver: zodResolver(sleepSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
@@ -36,14 +36,9 @@ export default function SleepLogs() {
   });
 
   const onSubmit = (data: SleepForm) => {
-    // Construct ISO strings
     const bedDateTime = new Date(`${data.date}T${data.bedTime}:00`);
     let wakeDateTime = new Date(`${data.date}T${data.wakeTime}:00`);
-    
-    // If wake time is earlier in the day than bed time, assume it's the next day
-    if (wakeDateTime <= bedDateTime) {
-      wakeDateTime.setDate(wakeDateTime.getDate() + 1);
-    }
+    if (wakeDateTime <= bedDateTime) wakeDateTime.setDate(wakeDateTime.getDate() + 1);
 
     createMutation.mutate({
       data: {
@@ -64,141 +59,106 @@ export default function SleepLogs() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this log?")) {
+    if (confirm("Delete log?")) {
       deleteMutation.mutate({ id }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/api/sleep"] });
-        }
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/sleep"] })
       });
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <PageHeader 
-          title="Sleep Tracker" 
-          description="Log your sleep hours to build a profile for disease prediction."
-        />
-        <GradientButton onClick={() => setIsFormOpen(!isFormOpen)} className="whitespace-nowrap">
-          <Plus size={18} /> {isFormOpen ? "Close Form" : "New Sleep Log"}
-        </GradientButton>
+      <div className="flex justify-between items-center">
+        <PageHeader title="Sleep Log" description="Track rest patterns" />
+        <button 
+          onClick={() => setIsFormOpen(!isFormOpen)} 
+          className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground mb-6 shadow-lg shadow-primary/20"
+        >
+          <Plus size={24} className={isFormOpen ? "rotate-45 transition-transform" : "transition-transform"} />
+        </button>
       </div>
 
       {isFormOpen && (
-        <PremiumCard className="bg-primary/5 border-primary/20">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <Moon className="text-primary" /> Log Last Night's Sleep
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <Label>Date (Night of)</Label>
-                <div className="relative">
-                  <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                  <Input type="date" className="pl-10" {...register("date")} />
-                </div>
-                {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date.message}</p>}
+        <PremiumCard className="border-primary/30">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <Label>Date</Label>
+              <div className="relative">
+                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input type="date" className="pl-10" {...register("date")} />
               </div>
-
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Went to Bed</Label>
+                <Label>Bedtime</Label>
                 <div className="relative">
-                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input type="time" className="pl-10" {...register("bedTime")} />
                 </div>
-                {errors.bedTime && <p className="text-red-500 text-sm mt-1">{errors.bedTime.message}</p>}
               </div>
-
               <div>
-                <Label>Woke Up</Label>
+                <Label>Wake Up</Label>
                 <div className="relative">
-                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input type="time" className="pl-10" {...register("wakeTime")} />
                 </div>
-                {errors.wakeTime && <p className="text-red-500 text-sm mt-1">{errors.wakeTime.message}</p>}
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label>Sleep Quality</Label>
-                <select 
-                  className="w-full px-4 py-3 rounded-xl bg-background/50 border-2 border-border/60 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all appearance-none"
-                  {...register("quality")}
-                >
-                  <option value="excellent">Excellent - Deep & Restful</option>
-                  <option value="good">Good - Normal</option>
-                  <option value="fair">Fair - Woke up a few times</option>
-                  <option value="poor">Poor - Tossed and turned</option>
-                </select>
-                {errors.quality && <p className="text-red-500 text-sm mt-1">{errors.quality.message}</p>}
-              </div>
-
-              <div>
-                <Label>Notes (Optional)</Label>
-                <Input placeholder="Ate late, stressed, etc." {...register("notes")} />
-              </div>
+            <div>
+              <Label>Quality</Label>
+              <select className="w-full px-4 py-3 rounded-xl bg-background border border-border/60 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none" {...register("quality")}>
+                <option value="excellent">Excellent</option>
+                <option value="good">Good</option>
+                <option value="fair">Fair</option>
+                <option value="poor">Poor</option>
+              </select>
             </div>
-
-            <div className="flex justify-end pt-2">
-              <GradientButton type="submit" isLoading={createMutation.isPending}>
-                Save Sleep Log
-              </GradientButton>
-            </div>
+            <GradientButton type="submit" isLoading={createMutation.isPending} className="w-full mt-4">
+              Save Log
+            </GradientButton>
           </form>
         </PremiumCard>
       )}
 
-      <div className="space-y-4">
-        <h3 className="text-xl font-bold">Past Records</h3>
+      <div className="space-y-3">
         {isLoading ? (
-          <div className="flex justify-center p-12"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" /></div>
+          <div className="flex justify-center p-8"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" /></div>
         ) : !logs?.length ? (
-          <PremiumCard className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground border-dashed">
-            <Moon className="w-12 h-12 mb-4 opacity-50" />
-            <p className="text-lg font-medium">No sleep logs yet.</p>
-            <p className="text-sm">Start tracking your sleep to improve disease predictions.</p>
+          <PremiumCard className="flex flex-col items-center justify-center p-8 text-center border-dashed">
+            <Moon className="w-10 h-10 mb-2 opacity-50" />
+            <p className="text-sm">No sleep logs yet.</p>
           </PremiumCard>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {logs.map((log) => (
-              <PremiumCard key={log.id} className="p-5 flex justify-between items-center group">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
-                    {log.durationHours.toFixed(1)}h
-                  </div>
-                  <div>
-                    <p className="font-bold text-foreground">
-                      {format(parseISO(log.date), 'EEEE, MMM do')}
-                    </p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                      {format(parseISO(log.bedtime), 'h:mm a')} - {format(parseISO(log.wakeTime), 'h:mm a')}
-                    </p>
-                    <div className="flex gap-2 mt-1">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider
-                        ${log.quality === 'excellent' ? 'bg-green-100 text-green-700' :
-                          log.quality === 'good' ? 'bg-blue-100 text-blue-700' :
-                          log.quality === 'fair' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'}
-                      `}>
-                        {log.quality}
-                      </span>
-                    </div>
-                  </div>
+          logs.map((log) => (
+            <PremiumCard key={log.id} className="p-4 flex justify-between items-center group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-secondary/20 text-secondary flex items-center justify-center font-bold">
+                  {log.durationHours.toFixed(1)}h
                 </div>
-                <button 
-                  onClick={() => handleDelete(log.id)}
-                  disabled={deleteMutation.isPending}
-                  className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                  title="Delete log"
-                >
-                  <Trash2 size={18} />
+                <div>
+                  <p className="font-bold text-foreground">
+                    {format(parseISO(log.date), 'EEE, MMM d')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(parseISO(log.bedtime), 'h:mm a')} - {format(parseISO(log.wakeTime), 'h:mm a')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-wide
+                  ${log.quality === 'excellent' ? 'bg-secondary/20 text-secondary' :
+                    log.quality === 'good' ? 'bg-primary/20 text-primary' :
+                    log.quality === 'fair' ? 'bg-accent/20 text-accent' :
+                    'bg-destructive/20 text-destructive'}
+                `}>
+                  {log.quality}
+                </span>
+                <button onClick={() => handleDelete(log.id)} className="text-muted-foreground hover:text-destructive">
+                  <Trash2 size={16} />
                 </button>
-              </PremiumCard>
-            ))}
-          </div>
+              </div>
+            </PremiumCard>
+          ))
         )}
       </div>
     </div>

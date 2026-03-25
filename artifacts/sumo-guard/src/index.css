@@ -24,56 +24,60 @@
 }
 
 :root {
-  /* Soft, premium health aesthetic (Teal/Mint focus) */
-  --background: 174 100% 97%; /* #f0fdfa - teal 50 */
-  --foreground: 222 47% 11%;  /* #0f172a - slate 900 */
+  /* Very dark navy/slate background */
+  --background: 220 20% 7%;
+  --foreground: 0 0% 95%;
   
-  --primary: 173 80% 40%;     /* #0d9488 - teal 600 */
-  --primary-foreground: 0 0% 100%;
+  /* Orange/amber primary */
+  --primary: 38 92% 50%;
+  --primary-foreground: 220 20% 7%;
   
-  --secondary: 199 89% 48%;   /* #0ea5e9 - sky 500 */
+  /* Teal/cyan secondary */
+  --secondary: 185 80% 45%;
   --secondary-foreground: 0 0% 100%;
   
-  --muted: 174 60% 90%;       /* Soft teal for backgrounds */
-  --muted-foreground: 215 16% 47%;
+  --muted: 220 10% 20%;
+  --muted-foreground: 220 5% 60%;
   
-  --accent: 142 71% 45%;      /* #22c55e - green 500 */
-  --accent-foreground: 0 0% 100%;
+  /* Yellow/golden accent */
+  --accent: 45 93% 58%;
+  --accent-foreground: 220 20% 7%;
   
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
   
-  --border: 174 40% 85%;
-  --ring: 173 80% 40%;
+  --border: 220 15% 18%;
+  --ring: 38 92% 50%;
   
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  /* Slightly lighter dark for cards */
+  --card: 220 18% 12%;
+  --card-foreground: 0 0% 95%;
 }
 
 .dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
+  --background: 220 20% 7%;
+  --foreground: 0 0% 95%;
   
-  --primary: 173 80% 50%;
-  --primary-foreground: 222 47% 11%;
+  --primary: 38 92% 50%;
+  --primary-foreground: 220 20% 7%;
   
-  --secondary: 199 89% 60%;
-  --secondary-foreground: 222 47% 11%;
+  --secondary: 185 80% 45%;
+  --secondary-foreground: 0 0% 100%;
   
-  --muted: 217 32% 17%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 220 10% 20%;
+  --muted-foreground: 220 5% 60%;
   
-  --accent: 142 71% 55%;
-  --accent-foreground: 222 47% 11%;
+  --accent: 45 93% 58%;
+  --accent-foreground: 220 20% 7%;
   
-  --destructive: 0 62% 30%;
+  --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
   
-  --border: 217 32% 17%;
-  --ring: 173 80% 50%;
+  --border: 220 15% 18%;
+  --ring: 38 92% 50%;
   
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
+  --card: 220 18% 12%;
+  --card-foreground: 0 0% 95%;
 }
 
 @layer base {

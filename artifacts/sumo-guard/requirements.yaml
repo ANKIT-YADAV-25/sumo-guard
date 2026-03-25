@@ -1,0 +1,20 @@
+packages:
+  "framer-motion": "For fluid page transitions, layout animations, and micro-interactions"
+  "recharts": "For rendering beautiful health and sleep trend charts"
+  "date-fns": "For formatting dates and calculating time durations"
+  "react-hook-form": "For robust handling of complex health logging forms"
+  "@hookform/resolvers": "For Zod schema validation integration with react-hook-form"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes safely"
+
+images:
+  - path: "artifacts/sumo-guard/public/images/hero-health.png"
+    description: "Abstract modern medical and wellness background with soft teal and blue glowing gradients and subtle geometric shield shapes, highly polished, premium quality"
+    aspect_ratio: "16:9"
+  - path: "artifacts/sumo-guard/public/images/avatar-placeholder.png"
+    description: "Minimalist abstract user avatar placeholder in soft teal and mint colors, 3D soft rendered"
+    aspect_ratio: "1:1"
+
+notes:
+  - Application uses pre-generated TanStack Query hooks from @workspace/api-client-react.
+  - Using a custom layout component wrapping all Wouter routes for seamless sidebar navigation.

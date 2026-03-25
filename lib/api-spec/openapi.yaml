@@ -1,15 +1,22 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Sumo Guard Health Analysis API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: sleep
+    description: Sleep tracking
+  - name: habits
+    description: Daily habit tracking
+  - name: predictions
+    description: Disease risk predictions
+  - name: profile
+    description: User profile
 paths:
   /healthz:
     get:
@@ -24,6 +31,165 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /sleep:
+    get:
+      operationId: getSleepLogs
+      tags: [sleep]
+      summary: Get sleep logs
+      responses:
+        "200":
+          description: List of sleep logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SleepLog"
+    post:
+      operationId: createSleepLog
+      tags: [sleep]
+      summary: Create a sleep log
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSleepLog"
+      responses:
+        "201":
+          description: Sleep log created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SleepLog"
+
+  /sleep/{id}:
+    delete:
+      operationId: deleteSleepLog
+      tags: [sleep]
+      summary: Delete a sleep log
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /habits:
+    get:
+      operationId: getHabitLogs
+      tags: [habits]
+      summary: Get habit logs
+      responses:
+        "200":
+          description: List of habit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HabitLog"
+    post:
+      operationId: createHabitLog
+      tags: [habits]
+      summary: Create a habit log
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHabitLog"
+      responses:
+        "201":
+          description: Habit log created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HabitLog"
+
+  /habits/{id}:
+    delete:
+      operationId: deleteHabitLog
+      tags: [habits]
+      summary: Delete a habit log
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /predictions:
+    get:
+      operationId: getPredictions
+      tags: [predictions]
+      summary: Get disease risk predictions
+      responses:
+        "200":
+          description: Disease risk predictions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictionsResult"
+
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    put:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserProfile"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [predictions]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +200,343 @@ components:
       required:
         - status
 
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    SleepLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        bedtime:
+          type: string
+          description: ISO datetime string of when user went to bed
+        wakeTime:
+          type: string
+          description: ISO datetime string of when user woke up
+        durationHours:
+          type: number
+          description: Calculated sleep duration in hours
+        quality:
+          type: string
+          enum: [poor, fair, good, excellent]
+        notes:
+          type: string
+          nullable: true
+        date:
+          type: string
+          description: Date of the sleep entry (YYYY-MM-DD)
+        createdAt:
+          type: string
+      required:
+        - id
+        - bedtime
+        - wakeTime
+        - durationHours
+        - quality
+        - date
+        - createdAt
+
+    CreateSleepLog:
+      type: object
+      properties:
+        bedtime:
+          type: string
+          description: ISO datetime string of when user went to bed
+        wakeTime:
+          type: string
+          description: ISO datetime string of when user woke up
+        quality:
+          type: string
+          enum: [poor, fair, good, excellent]
+        notes:
+          type: string
+          nullable: true
+        date:
+          type: string
+          description: Date of the sleep entry (YYYY-MM-DD)
+      required:
+        - bedtime
+        - wakeTime
+        - quality
+        - date
+
+    HabitLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          description: Date of the habit log (YYYY-MM-DD)
+        exerciseMinutes:
+          type: integer
+          description: Minutes of exercise
+        waterGlasses:
+          type: integer
+          description: Glasses of water consumed
+        fruitVeggieServings:
+          type: integer
+          description: Servings of fruits and vegetables
+        screenTimeHours:
+          type: number
+          description: Hours of screen time
+        stressLevel:
+          type: integer
+          description: Stress level 1-10
+        smokingCigarettes:
+          type: integer
+          description: Number of cigarettes smoked
+        alcoholDrinks:
+          type: integer
+          description: Number of alcoholic drinks
+        meditationMinutes:
+          type: integer
+          description: Minutes of meditation/mindfulness
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - date
+        - exerciseMinutes
+        - waterGlasses
+        - fruitVeggieServings
+        - screenTimeHours
+        - stressLevel
+        - smokingCigarettes
+        - alcoholDrinks
+        - meditationMinutes
+        - createdAt
+
+    CreateHabitLog:
+      type: object
+      properties:
+        date:
+          type: string
+          description: Date of the habit log (YYYY-MM-DD)
+        exerciseMinutes:
+          type: integer
+          description: Minutes of exercise
+        waterGlasses:
+          type: integer
+          description: Glasses of water consumed
+        fruitVeggieServings:
+          type: integer
+          description: Servings of fruits and vegetables
+        screenTimeHours:
+          type: number
+          description: Hours of screen time
+        stressLevel:
+          type: integer
+          description: Stress level 1-10
+        smokingCigarettes:
+          type: integer
+          description: Number of cigarettes smoked (default 0)
+        alcoholDrinks:
+          type: integer
+          description: Number of alcoholic drinks (default 0)
+        meditationMinutes:
+          type: integer
+          description: Minutes of meditation/mindfulness
+        notes:
+          type: string
+          nullable: true
+      required:
+        - date
+        - exerciseMinutes
+        - waterGlasses
+        - fruitVeggieServings
+        - screenTimeHours
+        - stressLevel
+        - smokingCigarettes
+        - alcoholDrinks
+        - meditationMinutes
+
+    DiseaseRisk:
+      type: object
+      properties:
+        diseaseName:
+          type: string
+        riskLevel:
+          type: string
+          enum: [low, moderate, high, critical]
+        riskScore:
+          type: number
+          description: Risk score 0-100
+        predictedTimeframe:
+          type: string
+          description: Predicted timeframe (e.g. "2-3 years", "5+ years")
+        contributingFactors:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+      required:
+        - diseaseName
+        - riskLevel
+        - riskScore
+        - predictedTimeframe
+        - contributingFactors
+        - recommendations
+
+    PredictionsResult:
+      type: object
+      properties:
+        overallHealthScore:
+          type: integer
+          description: Overall health score 0-100
+        riskAssessmentDate:
+          type: string
+        diseases:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiseaseRisk"
+        summary:
+          type: string
+        dataInsufficient:
+          type: boolean
+      required:
+        - overallHealthScore
+        - riskAssessmentDate
+        - diseases
+        - summary
+        - dataInsufficient
+
+    DashboardSummary:
+      type: object
+      properties:
+        healthScore:
+          type: integer
+        avgSleepHours:
+          type: number
+        avgExerciseMinutes:
+          type: number
+        avgStressLevel:
+          type: number
+        avgWaterGlasses:
+          type: number
+        totalSleepLogs:
+          type: integer
+        totalHabitLogs:
+          type: integer
+        topRisks:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiseaseRisk"
+        sleepTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/SleepTrendPoint"
+        recentLogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/HabitLog"
+      required:
+        - healthScore
+        - avgSleepHours
+        - avgExerciseMinutes
+        - avgStressLevel
+        - avgWaterGlasses
+        - totalSleepLogs
+        - totalHabitLogs
+        - topRisks
+        - sleepTrend
+        - recentLogs
+
+    SleepTrendPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        hours:
+          type: number
+        quality:
+          type: string
+      required:
+        - date
+        - hours
+        - quality
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+          enum: [male, female, other]
+        weight:
+          type: number
+          description: Weight in kg
+        height:
+          type: number
+          description: Height in cm
+        existingConditions:
+          type: array
+          items:
+            type: string
+        familyHistory:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - age
+        - gender
+        - weight
+        - height
+        - existingConditions
+        - familyHistory
+        - createdAt
+
+    UpdateUserProfile:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+          enum: [male, female, other]
+        weight:
+          type: number
+        height:
+          type: number
+        existingConditions:
+          type: array
+          items:
+            type: string
+        familyHistory:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - age
+        - gender
+        - weight
+        - height
+        - existingConditions
+        - familyHistory

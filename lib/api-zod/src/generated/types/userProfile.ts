@@ -12,9 +12,7 @@ export interface UserProfile {
   name: string;
   age: number;
   gender: UserProfileGender;
-  /** Weight in kg */
   weight: number;
-  /** Height in cm */
   height: number;
   existingConditions: string[];
   familyHistory: string[];

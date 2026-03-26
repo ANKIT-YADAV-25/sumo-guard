@@ -10,9 +10,7 @@ import type { DiseaseRiskRiskLevel } from "./diseaseRiskRiskLevel";
 export interface DiseaseRisk {
   diseaseName: string;
   riskLevel: DiseaseRiskRiskLevel;
-  /** Risk score 0-100 */
   riskScore: number;
-  /** Predicted timeframe (e.g. "2-3 years", "5+ years") */
   predictedTimeframe: string;
   contributingFactors: string[];
   recommendations: string[];

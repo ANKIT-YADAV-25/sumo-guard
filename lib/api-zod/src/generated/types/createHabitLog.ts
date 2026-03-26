@@ -7,23 +7,14 @@
  */
 
 export interface CreateHabitLog {
-  /** Date of the habit log (YYYY-MM-DD) */
   date: string;
-  /** Minutes of exercise */
   exerciseMinutes: number;
-  /** Glasses of water consumed */
   waterGlasses: number;
-  /** Servings of fruits and vegetables */
   fruitVeggieServings: number;
-  /** Hours of screen time */
   screenTimeHours: number;
-  /** Stress level 1-10 */
   stressLevel: number;
-  /** Number of cigarettes smoked (default 0) */
   smokingCigarettes: number;
-  /** Number of alcoholic drinks (default 0) */
   alcoholDrinks: number;
-  /** Minutes of meditation/mindfulness */
   meditationMinutes: number;
   notes?: string | null;
 }

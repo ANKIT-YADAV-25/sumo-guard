@@ -6,17 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HabitLog {
-  id: number;
+export interface HabitStatPoint {
+  label: string;
   date: string;
   exerciseMinutes: number;
   waterGlasses: number;
-  fruitVeggieServings: number;
-  screenTimeHours: number;
   stressLevel: number;
   smokingCigarettes: number;
   alcoholDrinks: number;
   meditationMinutes: number;
-  notes?: string | null;
-  createdAt: string;
 }

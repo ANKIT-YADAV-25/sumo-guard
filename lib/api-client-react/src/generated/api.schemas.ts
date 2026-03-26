@@ -9,9 +9,73 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface ErrorResponse {
+  error: string;
+}
+
 export interface SuccessResponse {
   success: boolean;
   message: string;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export type AuthUserLifestyle = { [key: string]: unknown };
+
+export interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  lifestyle: AuthUserLifestyle;
+  onboardingDone: boolean;
+  createdAt: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
+export type OnboardingRequestActivityLevel =
+  (typeof OnboardingRequestActivityLevel)[keyof typeof OnboardingRequestActivityLevel];
+
+export const OnboardingRequestActivityLevel = {
+  sedentary: "sedentary",
+  light: "light",
+  moderate: "moderate",
+  active: "active",
+  very_active: "very_active",
+} as const;
+
+export type OnboardingRequestDietType =
+  (typeof OnboardingRequestDietType)[keyof typeof OnboardingRequestDietType];
+
+export const OnboardingRequestDietType = {
+  standard: "standard",
+  vegetarian: "vegetarian",
+  vegan: "vegan",
+  keto: "keto",
+  paleo: "paleo",
+  other: "other",
+} as const;
+
+export interface OnboardingRequest {
+  isSmoker: boolean;
+  isDrinker: boolean;
+  isAlcoholic: boolean;
+  hasChronicCondition: boolean;
+  chronicConditions: string[];
+  activityLevel: OnboardingRequestActivityLevel;
+  dietType: OnboardingRequestDietType;
 }
 
 export type SleepLogQuality =
@@ -26,15 +90,11 @@ export const SleepLogQuality = {
 
 export interface SleepLog {
   id: number;
-  /** ISO datetime string of when user went to bed */
   bedtime: string;
-  /** ISO datetime string of when user woke up */
   wakeTime: string;
-  /** Calculated sleep duration in hours */
   durationHours: number;
   quality: SleepLogQuality;
   notes?: string | null;
-  /** Date of the sleep entry (YYYY-MM-DD) */
   date: string;
   createdAt: string;
 }
@@ -50,58 +110,37 @@ export const CreateSleepLogQuality = {
 } as const;
 
 export interface CreateSleepLog {
-  /** ISO datetime string of when user went to bed */
   bedtime: string;
-  /** ISO datetime string of when user woke up */
   wakeTime: string;
   quality: CreateSleepLogQuality;
   notes?: string | null;
-  /** Date of the sleep entry (YYYY-MM-DD) */
   date: string;
 }
 
 export interface HabitLog {
   id: number;
-  /** Date of the habit log (YYYY-MM-DD) */
   date: string;
-  /** Minutes of exercise */
   exerciseMinutes: number;
-  /** Glasses of water consumed */
   waterGlasses: number;
-  /** Servings of fruits and vegetables */
   fruitVeggieServings: number;
-  /** Hours of screen time */
   screenTimeHours: number;
-  /** Stress level 1-10 */
   stressLevel: number;
-  /** Number of cigarettes smoked */
   smokingCigarettes: number;
-  /** Number of alcoholic drinks */
   alcoholDrinks: number;
-  /** Minutes of meditation/mindfulness */
   meditationMinutes: number;
   notes?: string | null;
   createdAt: string;
 }
 
 export interface CreateHabitLog {
-  /** Date of the habit log (YYYY-MM-DD) */
   date: string;
-  /** Minutes of exercise */
   exerciseMinutes: number;
-  /** Glasses of water consumed */
   waterGlasses: number;
-  /** Servings of fruits and vegetables */
   fruitVeggieServings: number;
-  /** Hours of screen time */
   screenTimeHours: number;
-  /** Stress level 1-10 */
   stressLevel: number;
-  /** Number of cigarettes smoked (default 0) */
   smokingCigarettes: number;
-  /** Number of alcoholic drinks (default 0) */
   alcoholDrinks: number;
-  /** Minutes of meditation/mindfulness */
   meditationMinutes: number;
   notes?: string | null;
 }
@@ -119,16 +158,13 @@ export const DiseaseRiskRiskLevel = {
 export interface DiseaseRisk {
   diseaseName: string;
   riskLevel: DiseaseRiskRiskLevel;
-  /** Risk score 0-100 */
   riskScore: number;
-  /** Predicted timeframe (e.g. "2-3 years", "5+ years") */
   predictedTimeframe: string;
   contributingFactors: string[];
   recommendations: string[];
 }
 
 export interface PredictionsResult {
-  /** Overall health score 0-100 */
   overallHealthScore: number;
   riskAssessmentDate: string;
   diseases: DiseaseRisk[];
@@ -153,6 +189,61 @@ export interface DashboardSummary {
   topRisks: DiseaseRisk[];
   sleepTrend: SleepTrendPoint[];
   recentLogs: HabitLog[];
+  selectedDate?: string | null;
+  selectedDateSleep?: SleepLog | null;
+  selectedDateHabit?: HabitLog | null;
+}
+
+export interface SleepStatPoint {
+  label: string;
+  date: string;
+  hours: number;
+  quality: string;
+  bedtime: string;
+  wakeTime: string;
+}
+
+export interface HabitStatPoint {
+  label: string;
+  date: string;
+  exerciseMinutes: number;
+  waterGlasses: number;
+  stressLevel: number;
+  smokingCigarettes: number;
+  alcoholDrinks: number;
+  meditationMinutes: number;
+}
+
+export type StatAveragesSleepQualityDistribution = {
+  poor: number;
+  fair: number;
+  good: number;
+  excellent: number;
+};
+
+export interface StatAverages {
+  avgSleepHours: number;
+  avgExerciseMinutes: number;
+  avgStressLevel: number;
+  avgWaterGlasses: number;
+  avgSmoking: number;
+  avgAlcohol: number;
+  sleepQualityDistribution: StatAveragesSleepQualityDistribution;
+}
+
+export interface MonthlyReviewPoint {
+  week: string;
+  avgSleep: number;
+  avgStress: number;
+  avgExercise: number;
+}
+
+export interface StatisticsResult {
+  period: string;
+  sleepData: SleepStatPoint[];
+  habitData: HabitStatPoint[];
+  averages: StatAverages;
+  monthlyReview: MonthlyReviewPoint[];
 }
 
 export type UserProfileGender =
@@ -169,9 +260,7 @@ export interface UserProfile {
   name: string;
   age: number;
   gender: UserProfileGender;
-  /** Weight in kg */
   weight: number;
-  /** Height in cm */
   height: number;
   existingConditions: string[];
   familyHistory: string[];
@@ -196,3 +285,41 @@ export interface UpdateUserProfile {
   existingConditions: string[];
   familyHistory: string[];
 }
+
+export type GetSleepLogsParams = {
+  from?: string;
+  to?: string;
+};
+
+export type GetHabitLogsParams = {
+  from?: string;
+  to?: string;
+};
+
+export type GetDashboardParams = {
+  /**
+   * Filter by specific date (YYYY-MM-DD)
+   */
+  date?: string;
+};
+
+export type GetStatisticsParams = {
+  /**
+   * Period for statistics
+   */
+  period?: GetStatisticsPeriod;
+  /**
+   * Reference date (YYYY-MM-DD)
+   */
+  date?: string;
+};
+
+export type GetStatisticsPeriod =
+  (typeof GetStatisticsPeriod)[keyof typeof GetStatisticsPeriod];
+
+export const GetStatisticsPeriod = {
+  day: "day",
+  week: "week",
+  month: "month",
+  year: "year",
+} as const;

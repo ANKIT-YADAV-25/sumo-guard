@@ -8,7 +8,6 @@
 import type { DiseaseRisk } from "./diseaseRisk";
 
 export interface PredictionsResult {
-  /** Overall health score 0-100 */
   overallHealthScore: number;
   riskAssessmentDate: string;
   diseases: DiseaseRisk[];

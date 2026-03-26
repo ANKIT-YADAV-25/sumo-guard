@@ -9,15 +9,11 @@ import type { SleepLogQuality } from "./sleepLogQuality";
 
 export interface SleepLog {
   id: number;
-  /** ISO datetime string of when user went to bed */
   bedtime: string;
-  /** ISO datetime string of when user woke up */
   wakeTime: string;
-  /** Calculated sleep duration in hours */
   durationHours: number;
   quality: SleepLogQuality;
   notes?: string | null;
-  /** Date of the sleep entry (YYYY-MM-DD) */
   date: string;
   createdAt: string;
 }

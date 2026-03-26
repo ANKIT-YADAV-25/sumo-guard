@@ -7,6 +7,7 @@
  */
 import type { DiseaseRisk } from "./diseaseRisk";
 import type { HabitLog } from "./habitLog";
+import type { SleepLog } from "./sleepLog";
 import type { SleepTrendPoint } from "./sleepTrendPoint";
 
 export interface DashboardSummary {
@@ -20,4 +21,7 @@ export interface DashboardSummary {
   topRisks: DiseaseRisk[];
   sleepTrend: SleepTrendPoint[];
   recentLogs: HabitLog[];
+  selectedDate?: string | null;
+  selectedDateSleep?: SleepLog | null;
+  selectedDateHabit?: HabitLog | null;
 }

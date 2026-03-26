@@ -5,12 +5,12 @@
  * Sumo Guard Health Analysis API
  * OpenAPI spec version: 0.1.0
  */
-import type { CreateSleepLogQuality } from "./createSleepLogQuality";
 
-export interface CreateSleepLog {
+export interface SleepStatPoint {
+  label: string;
+  date: string;
+  hours: number;
+  quality: string;
   bedtime: string;
   wakeTime: string;
-  quality: CreateSleepLogQuality;
-  notes?: string | null;
-  date: string;
 }

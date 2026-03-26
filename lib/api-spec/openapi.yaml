@@ -9,6 +9,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
   - name: sleep
     description: Sleep tracking
   - name: habits
@@ -17,13 +19,14 @@ tags:
     description: Disease risk predictions
   - name: profile
     description: User profile
+  - name: statistics
+    description: Statistics
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -32,11 +35,109 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/onboarding:
+    post:
+      operationId: saveOnboarding
+      tags: [auth]
+      summary: Save lifestyle onboarding data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OnboardingRequest"
+      responses:
+        "200":
+          description: Onboarding saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+
   /sleep:
     get:
       operationId: getSleepLogs
       tags: [sleep]
       summary: Get sleep logs
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: List of sleep logs
@@ -88,6 +189,15 @@ paths:
       operationId: getHabitLogs
       tags: [habits]
       summary: Get habit logs
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: List of habit logs
@@ -182,6 +292,12 @@ paths:
       operationId: getDashboard
       tags: [predictions]
       summary: Get dashboard summary
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+          description: Filter by specific date (YYYY-MM-DD)
       responses:
         "200":
           description: Dashboard summary data
@@ -189,6 +305,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DashboardSummary"
+
+  /statistics:
+    get:
+      operationId: getStatistics
+      tags: [statistics]
+      summary: Get statistics for a period
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month, year]
+          description: Period for statistics
+        - name: date
+          in: query
+          schema:
+            type: string
+          description: Reference date (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Statistics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatisticsResult"
 
 components:
   schemas:
@@ -199,6 +340,14 @@ components:
           type: string
       required:
         - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
 
     SuccessResponse:
       type: object
@@ -211,6 +360,96 @@ components:
         - success
         - message
 
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - name
+        - email
+        - password
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        lifestyle:
+          type: object
+          additionalProperties: true
+        onboardingDone:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - lifestyle
+        - onboardingDone
+        - createdAt
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/AuthUser"
+      required:
+        - token
+        - user
+
+    OnboardingRequest:
+      type: object
+      properties:
+        isSmoker:
+          type: boolean
+        isDrinker:
+          type: boolean
+        isAlcoholic:
+          type: boolean
+        hasChronicCondition:
+          type: boolean
+        chronicConditions:
+          type: array
+          items:
+            type: string
+        activityLevel:
+          type: string
+          enum: [sedentary, light, moderate, active, very_active]
+        dietType:
+          type: string
+          enum: [standard, vegetarian, vegan, keto, paleo, other]
+      required:
+        - isSmoker
+        - isDrinker
+        - isAlcoholic
+        - hasChronicCondition
+        - chronicConditions
+        - activityLevel
+        - dietType
+
     SleepLog:
       type: object
       properties:
@@ -218,13 +457,10 @@ components:
           type: integer
         bedtime:
           type: string
-          description: ISO datetime string of when user went to bed
         wakeTime:
           type: string
-          description: ISO datetime string of when user woke up
         durationHours:
           type: number
-          description: Calculated sleep duration in hours
         quality:
           type: string
           enum: [poor, fair, good, excellent]
@@ -233,7 +469,6 @@ components:
           nullable: true
         date:
           type: string
-          description: Date of the sleep entry (YYYY-MM-DD)
         createdAt:
           type: string
       required:
@@ -250,10 +485,8 @@ components:
       properties:
         bedtime:
           type: string
-          description: ISO datetime string of when user went to bed
         wakeTime:
           type: string
-          description: ISO datetime string of when user woke up
         quality:
           type: string
           enum: [poor, fair, good, excellent]
@@ -262,7 +495,6 @@ components:
           nullable: true
         date:
           type: string
-          description: Date of the sleep entry (YYYY-MM-DD)
       required:
         - bedtime
         - wakeTime
@@ -276,31 +508,22 @@ components:
           type: integer
         date:
           type: string
-          description: Date of the habit log (YYYY-MM-DD)
         exerciseMinutes:
           type: integer
-          description: Minutes of exercise
         waterGlasses:
           type: integer
-          description: Glasses of water consumed
         fruitVeggieServings:
           type: integer
-          description: Servings of fruits and vegetables
         screenTimeHours:
           type: number
-          description: Hours of screen time
         stressLevel:
           type: integer
-          description: Stress level 1-10
         smokingCigarettes:
           type: integer
-          description: Number of cigarettes smoked
         alcoholDrinks:
           type: integer
-          description: Number of alcoholic drinks
         meditationMinutes:
           type: integer
-          description: Minutes of meditation/mindfulness
         notes:
           type: string
           nullable: true
@@ -324,31 +547,22 @@ components:
       properties:
         date:
           type: string
-          description: Date of the habit log (YYYY-MM-DD)
         exerciseMinutes:
           type: integer
-          description: Minutes of exercise
         waterGlasses:
           type: integer
-          description: Glasses of water consumed
         fruitVeggieServings:
           type: integer
-          description: Servings of fruits and vegetables
         screenTimeHours:
           type: number
-          description: Hours of screen time
         stressLevel:
           type: integer
-          description: Stress level 1-10
         smokingCigarettes:
           type: integer
-          description: Number of cigarettes smoked (default 0)
         alcoholDrinks:
           type: integer
-          description: Number of alcoholic drinks (default 0)
         meditationMinutes:
           type: integer
-          description: Minutes of meditation/mindfulness
         notes:
           type: string
           nullable: true
@@ -373,10 +587,8 @@ components:
           enum: [low, moderate, high, critical]
         riskScore:
           type: number
-          description: Risk score 0-100
         predictedTimeframe:
           type: string
-          description: Predicted timeframe (e.g. "2-3 years", "5+ years")
         contributingFactors:
           type: array
           items:
@@ -398,7 +610,6 @@ components:
       properties:
         overallHealthScore:
           type: integer
-          description: Overall health score 0-100
         riskAssessmentDate:
           type: string
         diseases:
@@ -445,6 +656,17 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/HabitLog"
+        selectedDate:
+          type: string
+          nullable: true
+        selectedDateSleep:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/SleepLog"
+        selectedDateHabit:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/HabitLog"
       required:
         - healthScore
         - avgSleepHours
@@ -471,6 +693,137 @@ components:
         - hours
         - quality
 
+    StatisticsResult:
+      type: object
+      properties:
+        period:
+          type: string
+        sleepData:
+          type: array
+          items:
+            $ref: "#/components/schemas/SleepStatPoint"
+        habitData:
+          type: array
+          items:
+            $ref: "#/components/schemas/HabitStatPoint"
+        averages:
+          $ref: "#/components/schemas/StatAverages"
+        monthlyReview:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthlyReviewPoint"
+      required:
+        - period
+        - sleepData
+        - habitData
+        - averages
+        - monthlyReview
+
+    SleepStatPoint:
+      type: object
+      properties:
+        label:
+          type: string
+        date:
+          type: string
+        hours:
+          type: number
+        quality:
+          type: string
+        bedtime:
+          type: string
+        wakeTime:
+          type: string
+      required:
+        - label
+        - date
+        - hours
+        - quality
+        - bedtime
+        - wakeTime
+
+    HabitStatPoint:
+      type: object
+      properties:
+        label:
+          type: string
+        date:
+          type: string
+        exerciseMinutes:
+          type: integer
+        waterGlasses:
+          type: integer
+        stressLevel:
+          type: integer
+        smokingCigarettes:
+          type: integer
+        alcoholDrinks:
+          type: integer
+        meditationMinutes:
+          type: integer
+      required:
+        - label
+        - date
+        - exerciseMinutes
+        - waterGlasses
+        - stressLevel
+        - smokingCigarettes
+        - alcoholDrinks
+        - meditationMinutes
+
+    StatAverages:
+      type: object
+      properties:
+        avgSleepHours:
+          type: number
+        avgExerciseMinutes:
+          type: number
+        avgStressLevel:
+          type: number
+        avgWaterGlasses:
+          type: number
+        avgSmoking:
+          type: number
+        avgAlcohol:
+          type: number
+        sleepQualityDistribution:
+          type: object
+          properties:
+            poor:
+              type: integer
+            fair:
+              type: integer
+            good:
+              type: integer
+            excellent:
+              type: integer
+          required: [poor, fair, good, excellent]
+      required:
+        - avgSleepHours
+        - avgExerciseMinutes
+        - avgStressLevel
+        - avgWaterGlasses
+        - avgSmoking
+        - avgAlcohol
+        - sleepQualityDistribution
+
+    MonthlyReviewPoint:
+      type: object
+      properties:
+        week:
+          type: string
+        avgSleep:
+          type: number
+        avgStress:
+          type: number
+        avgExercise:
+          type: number
+      required:
+        - week
+        - avgSleep
+        - avgStress
+        - avgExercise
+
     UserProfile:
       type: object
       properties:
@@ -485,10 +838,8 @@ components:
           enum: [male, female, other]
         weight:
           type: number
-          description: Weight in kg
         height:
           type: number
-          description: Height in cm
         existingConditions:
           type: array
           items:

@@ -8,7 +8,6 @@
 import * as zod from "zod";
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -16,18 +15,105 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
+ * @summary Register new user
+ */
+export const RegisterBody = zod.object({
+  name: zod.string(),
+  email: zod.string(),
+  password: zod.string(),
+});
+
+/**
+ * @summary Login
+ */
+export const LoginBody = zod.object({
+  email: zod.string(),
+  password: zod.string(),
+});
+
+export const LoginResponse = zod.object({
+  token: zod.string(),
+  user: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    email: zod.string(),
+    lifestyle: zod.record(zod.string(), zod.unknown()),
+    onboardingDone: zod.boolean(),
+    createdAt: zod.string(),
+  }),
+});
+
+/**
+ * @summary Logout
+ */
+export const LogoutResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string(),
+});
+
+/**
+ * @summary Get current user
+ */
+export const GetMeResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string(),
+  lifestyle: zod.record(zod.string(), zod.unknown()),
+  onboardingDone: zod.boolean(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Save lifestyle onboarding data
+ */
+export const SaveOnboardingBody = zod.object({
+  isSmoker: zod.boolean(),
+  isDrinker: zod.boolean(),
+  isAlcoholic: zod.boolean(),
+  hasChronicCondition: zod.boolean(),
+  chronicConditions: zod.array(zod.string()),
+  activityLevel: zod.enum([
+    "sedentary",
+    "light",
+    "moderate",
+    "active",
+    "very_active",
+  ]),
+  dietType: zod.enum([
+    "standard",
+    "vegetarian",
+    "vegan",
+    "keto",
+    "paleo",
+    "other",
+  ]),
+});
+
+export const SaveOnboardingResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string(),
+  lifestyle: zod.record(zod.string(), zod.unknown()),
+  onboardingDone: zod.boolean(),
+  createdAt: zod.string(),
+});
+
+/**
  * @summary Get sleep logs
  */
+export const GetSleepLogsQueryParams = zod.object({
+  from: zod.coerce.string().optional(),
+  to: zod.coerce.string().optional(),
+});
+
 export const GetSleepLogsResponseItem = zod.object({
   id: zod.number(),
-  bedtime: zod
-    .string()
-    .describe("ISO datetime string of when user went to bed"),
-  wakeTime: zod.string().describe("ISO datetime string of when user woke up"),
-  durationHours: zod.number().describe("Calculated sleep duration in hours"),
+  bedtime: zod.string(),
+  wakeTime: zod.string(),
+  durationHours: zod.number(),
   quality: zod.enum(["poor", "fair", "good", "excellent"]),
   notes: zod.string().nullish(),
-  date: zod.string().describe("Date of the sleep entry (YYYY-MM-DD)"),
+  date: zod.string(),
   createdAt: zod.string(),
 });
 export const GetSleepLogsResponse = zod.array(GetSleepLogsResponseItem);
@@ -36,13 +122,11 @@ export const GetSleepLogsResponse = zod.array(GetSleepLogsResponseItem);
  * @summary Create a sleep log
  */
 export const CreateSleepLogBody = zod.object({
-  bedtime: zod
-    .string()
-    .describe("ISO datetime string of when user went to bed"),
-  wakeTime: zod.string().describe("ISO datetime string of when user woke up"),
+  bedtime: zod.string(),
+  wakeTime: zod.string(),
   quality: zod.enum(["poor", "fair", "good", "excellent"]),
   notes: zod.string().nullish(),
-  date: zod.string().describe("Date of the sleep entry (YYYY-MM-DD)"),
+  date: zod.string(),
 });
 
 /**
@@ -60,21 +144,22 @@ export const DeleteSleepLogResponse = zod.object({
 /**
  * @summary Get habit logs
  */
+export const GetHabitLogsQueryParams = zod.object({
+  from: zod.coerce.string().optional(),
+  to: zod.coerce.string().optional(),
+});
+
 export const GetHabitLogsResponseItem = zod.object({
   id: zod.number(),
-  date: zod.string().describe("Date of the habit log (YYYY-MM-DD)"),
-  exerciseMinutes: zod.number().describe("Minutes of exercise"),
-  waterGlasses: zod.number().describe("Glasses of water consumed"),
-  fruitVeggieServings: zod
-    .number()
-    .describe("Servings of fruits and vegetables"),
-  screenTimeHours: zod.number().describe("Hours of screen time"),
-  stressLevel: zod.number().describe("Stress level 1-10"),
-  smokingCigarettes: zod.number().describe("Number of cigarettes smoked"),
-  alcoholDrinks: zod.number().describe("Number of alcoholic drinks"),
-  meditationMinutes: zod
-    .number()
-    .describe("Minutes of meditation\/mindfulness"),
+  date: zod.string(),
+  exerciseMinutes: zod.number(),
+  waterGlasses: zod.number(),
+  fruitVeggieServings: zod.number(),
+  screenTimeHours: zod.number(),
+  stressLevel: zod.number(),
+  smokingCigarettes: zod.number(),
+  alcoholDrinks: zod.number(),
+  meditationMinutes: zod.number(),
   notes: zod.string().nullish(),
   createdAt: zod.string(),
 });
@@ -84,23 +169,15 @@ export const GetHabitLogsResponse = zod.array(GetHabitLogsResponseItem);
  * @summary Create a habit log
  */
 export const CreateHabitLogBody = zod.object({
-  date: zod.string().describe("Date of the habit log (YYYY-MM-DD)"),
-  exerciseMinutes: zod.number().describe("Minutes of exercise"),
-  waterGlasses: zod.number().describe("Glasses of water consumed"),
-  fruitVeggieServings: zod
-    .number()
-    .describe("Servings of fruits and vegetables"),
-  screenTimeHours: zod.number().describe("Hours of screen time"),
-  stressLevel: zod.number().describe("Stress level 1-10"),
-  smokingCigarettes: zod
-    .number()
-    .describe("Number of cigarettes smoked (default 0)"),
-  alcoholDrinks: zod
-    .number()
-    .describe("Number of alcoholic drinks (default 0)"),
-  meditationMinutes: zod
-    .number()
-    .describe("Minutes of meditation\/mindfulness"),
+  date: zod.string(),
+  exerciseMinutes: zod.number(),
+  waterGlasses: zod.number(),
+  fruitVeggieServings: zod.number(),
+  screenTimeHours: zod.number(),
+  stressLevel: zod.number(),
+  smokingCigarettes: zod.number(),
+  alcoholDrinks: zod.number(),
+  meditationMinutes: zod.number(),
   notes: zod.string().nullish(),
 });
 
@@ -120,16 +197,14 @@ export const DeleteHabitLogResponse = zod.object({
  * @summary Get disease risk predictions
  */
 export const GetPredictionsResponse = zod.object({
-  overallHealthScore: zod.number().describe("Overall health score 0-100"),
+  overallHealthScore: zod.number(),
   riskAssessmentDate: zod.string(),
   diseases: zod.array(
     zod.object({
       diseaseName: zod.string(),
       riskLevel: zod.enum(["low", "moderate", "high", "critical"]),
-      riskScore: zod.number().describe("Risk score 0-100"),
-      predictedTimeframe: zod
-        .string()
-        .describe('Predicted timeframe (e.g. \"2-3 years\", \"5+ years\")'),
+      riskScore: zod.number(),
+      predictedTimeframe: zod.string(),
       contributingFactors: zod.array(zod.string()),
       recommendations: zod.array(zod.string()),
     }),
@@ -146,8 +221,8 @@ export const GetProfileResponse = zod.object({
   name: zod.string(),
   age: zod.number(),
   gender: zod.enum(["male", "female", "other"]),
-  weight: zod.number().describe("Weight in kg"),
-  height: zod.number().describe("Height in cm"),
+  weight: zod.number(),
+  height: zod.number(),
   existingConditions: zod.array(zod.string()),
   familyHistory: zod.array(zod.string()),
   createdAt: zod.string(),
@@ -171,8 +246,8 @@ export const UpdateProfileResponse = zod.object({
   name: zod.string(),
   age: zod.number(),
   gender: zod.enum(["male", "female", "other"]),
-  weight: zod.number().describe("Weight in kg"),
-  height: zod.number().describe("Height in cm"),
+  weight: zod.number(),
+  height: zod.number(),
   existingConditions: zod.array(zod.string()),
   familyHistory: zod.array(zod.string()),
   createdAt: zod.string(),
@@ -181,6 +256,13 @@ export const UpdateProfileResponse = zod.object({
 /**
  * @summary Get dashboard summary
  */
+export const GetDashboardQueryParams = zod.object({
+  date: zod.coerce
+    .string()
+    .optional()
+    .describe("Filter by specific date (YYYY-MM-DD)"),
+});
+
 export const GetDashboardResponse = zod.object({
   healthScore: zod.number(),
   avgSleepHours: zod.number(),
@@ -193,10 +275,8 @@ export const GetDashboardResponse = zod.object({
     zod.object({
       diseaseName: zod.string(),
       riskLevel: zod.enum(["low", "moderate", "high", "critical"]),
-      riskScore: zod.number().describe("Risk score 0-100"),
-      predictedTimeframe: zod
-        .string()
-        .describe('Predicted timeframe (e.g. \"2-3 years\", \"5+ years\")'),
+      riskScore: zod.number(),
+      predictedTimeframe: zod.string(),
       contributingFactors: zod.array(zod.string()),
       recommendations: zod.array(zod.string()),
     }),
@@ -211,21 +291,105 @@ export const GetDashboardResponse = zod.object({
   recentLogs: zod.array(
     zod.object({
       id: zod.number(),
-      date: zod.string().describe("Date of the habit log (YYYY-MM-DD)"),
-      exerciseMinutes: zod.number().describe("Minutes of exercise"),
-      waterGlasses: zod.number().describe("Glasses of water consumed"),
-      fruitVeggieServings: zod
-        .number()
-        .describe("Servings of fruits and vegetables"),
-      screenTimeHours: zod.number().describe("Hours of screen time"),
-      stressLevel: zod.number().describe("Stress level 1-10"),
-      smokingCigarettes: zod.number().describe("Number of cigarettes smoked"),
-      alcoholDrinks: zod.number().describe("Number of alcoholic drinks"),
-      meditationMinutes: zod
-        .number()
-        .describe("Minutes of meditation\/mindfulness"),
+      date: zod.string(),
+      exerciseMinutes: zod.number(),
+      waterGlasses: zod.number(),
+      fruitVeggieServings: zod.number(),
+      screenTimeHours: zod.number(),
+      stressLevel: zod.number(),
+      smokingCigarettes: zod.number(),
+      alcoholDrinks: zod.number(),
+      meditationMinutes: zod.number(),
       notes: zod.string().nullish(),
       createdAt: zod.string(),
+    }),
+  ),
+  selectedDate: zod.string().nullish(),
+  selectedDateSleep: zod
+    .object({
+      id: zod.number(),
+      bedtime: zod.string(),
+      wakeTime: zod.string(),
+      durationHours: zod.number(),
+      quality: zod.enum(["poor", "fair", "good", "excellent"]),
+      notes: zod.string().nullish(),
+      date: zod.string(),
+      createdAt: zod.string(),
+    })
+    .nullish(),
+  selectedDateHabit: zod
+    .object({
+      id: zod.number(),
+      date: zod.string(),
+      exerciseMinutes: zod.number(),
+      waterGlasses: zod.number(),
+      fruitVeggieServings: zod.number(),
+      screenTimeHours: zod.number(),
+      stressLevel: zod.number(),
+      smokingCigarettes: zod.number(),
+      alcoholDrinks: zod.number(),
+      meditationMinutes: zod.number(),
+      notes: zod.string().nullish(),
+      createdAt: zod.string(),
+    })
+    .nullish(),
+});
+
+/**
+ * @summary Get statistics for a period
+ */
+export const GetStatisticsQueryParams = zod.object({
+  period: zod
+    .enum(["day", "week", "month", "year"])
+    .optional()
+    .describe("Period for statistics"),
+  date: zod.coerce.string().optional().describe("Reference date (YYYY-MM-DD)"),
+});
+
+export const GetStatisticsResponse = zod.object({
+  period: zod.string(),
+  sleepData: zod.array(
+    zod.object({
+      label: zod.string(),
+      date: zod.string(),
+      hours: zod.number(),
+      quality: zod.string(),
+      bedtime: zod.string(),
+      wakeTime: zod.string(),
+    }),
+  ),
+  habitData: zod.array(
+    zod.object({
+      label: zod.string(),
+      date: zod.string(),
+      exerciseMinutes: zod.number(),
+      waterGlasses: zod.number(),
+      stressLevel: zod.number(),
+      smokingCigarettes: zod.number(),
+      alcoholDrinks: zod.number(),
+      meditationMinutes: zod.number(),
+    }),
+  ),
+  averages: zod.object({
+    avgSleepHours: zod.number(),
+    avgExerciseMinutes: zod.number(),
+    avgStressLevel: zod.number(),
+    avgWaterGlasses: zod.number(),
+    avgSmoking: zod.number(),
+    avgAlcohol: zod.number(),
+    sleepQualityDistribution: zod.object({
+      poor: zod.number(),
+      fair: zod.number(),
+      good: zod.number(),
+      excellent: zod.number(),
+    }),
+  }),
+  monthlyReview: zod.array(
+    zod.object({
+      week: zod.string(),
+      avgSleep: zod.number(),
+      avgStress: zod.number(),
+      avgExercise: zod.number(),
     }),
   ),
 });

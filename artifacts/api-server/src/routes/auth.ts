@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -36,18 +36,19 @@ router.post("/auth/register", async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ error: "Name, email and password are required" });
     }
-    const existing = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    const existing = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
     if (existing.length > 0) {
       return res.status(409).json({ error: "Email already registered" });
     }
     const passwordHash = await bcrypt.hash(password, 10);
-    const [user] = await db.insert(usersTable).values({
-      name,
-      email,
-      passwordHash,
-      lifestyle: "{}",
-      onboardingDone: "false",
-    }).returning();
+    const [user] = await db
+      .insert(usersTable)
+      .values({ name, email, passwordHash, lifestyle: "{}", onboardingDone: "false" })
+      .returning();
     const token = makeToken(user.id);
     res.status(201).json({ token, user: formatUser(user) });
   } catch (err) {
@@ -56,20 +57,44 @@ router.post("/auth/register", async (req, res) => {
   }
 });
 
+// Login by NAME (case-insensitive) OR email — name takes priority
 router.post("/auth/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    const { email: nameOrEmail, password } = req.body;
+    if (!nameOrEmail || !password) {
+      return res.status(400).json({ error: "Name/email and password are required" });
     }
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+
+    let user: typeof usersTable.$inferSelect | undefined;
+
+    // Try exact name match first (case-insensitive)
+    const byName = await db
+      .select()
+      .from(usersTable)
+      .where(ilike(usersTable.name, nameOrEmail.trim()))
+      .limit(1);
+
+    if (byName.length > 0) {
+      user = byName[0];
+    } else {
+      // Fall back to email
+      const byEmail = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.email, nameOrEmail.trim()))
+        .limit(1);
+      if (byEmail.length > 0) user = byEmail[0];
+    }
+
     if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ error: "Name not found. Check your name and try again." });
     }
+
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ error: "Incorrect password." });
     }
+
     const token = makeToken(user.id);
     res.json({ token, user: formatUser(user) });
   } catch (err) {
@@ -93,7 +118,11 @@ router.get("/auth/me", async (req, res) => {
     if (!payload) {
       return res.status(401).json({ error: "Invalid token" });
     }
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.userId)).limit(1);
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, payload.userId))
+      .limit(1);
     if (!user) {
       return res.status(401).json({ error: "User not found" });
     }
@@ -124,7 +153,8 @@ router.post("/auth/onboarding", async (req, res) => {
       dietType: req.body.dietType ?? "standard",
     };
 
-    const [updated] = await db.update(usersTable)
+    const [updated] = await db
+      .update(usersTable)
       .set({ lifestyle: JSON.stringify(lifestyle), onboardingDone: "true" })
       .where(eq(usersTable.id, payload.userId))
       .returning();

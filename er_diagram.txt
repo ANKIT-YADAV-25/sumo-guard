@@ -1,0 +1,74 @@
+# Sumo-Guard Entity-Relationship (ER) Diagram
+
+This document describes the database schema for Sumo-Guard. The project uses Firebase Cloud Firestore (NoSQL), so the relationships are structured through collections and sub-collections.
+
+## mermaid
+erDiagram
+    USERS ||--o{ SLEEP_LOGS : "has"
+    USERS ||--o{ HABIT_LOGS : "has"
+    USERS ||--|| HEALTH_DETAILS : "has"
+
+    USERS {
+        string uid PK "Document ID"
+        string name
+        string email
+        boolean onboardingDone
+        string createdAt
+    }
+
+    SLEEP_LOGS {
+        string date PK "Document ID (YYYY-MM-DD)"
+        string bedtime
+        string wakeTime
+        number durationHours
+        string quality
+        string notes
+        string createdAt
+    }
+
+    HABIT_LOGS {
+        string date PK "Document ID (YYYY-MM-DD)"
+        number exerciseMinutes
+        number waterGlasses
+        number fruitVeggieServings
+        number screenTimeHours
+        number stressLevel
+        number smokingCigarettes
+        number alcoholDrinks
+        number meditationMinutes
+        string notes
+        string createdAt
+    }
+
+    HEALTH_DETAILS {
+        string docId PK "main"
+        string name
+        number age
+        string gender
+        number weight
+        number height
+        string[] existingConditions
+        string[] familyHistory
+        string createdAt
+    }
+
+## Database Structure (Firestore)
+
+### 1. Root Collection: `users`
+- Each document ID is the Firebase Auth User UID.
+- Stores basic account information and onboarding status.
+
+### 2. Sub-Collection: `users/{uid}/sleepLogs`
+- Each document ID is the date of the log (e.g., `2024-04-09`).
+- Records sleep metrics for a specific day.
+
+### 3. Sub-Collection: `users/{uid}/habitLogs`
+- Each document ID is the date of the log (e.g., `2024-04-09`).
+- Records various health habits and stress levels.
+
+### 4. Sub-Collection: `users/{uid}/user_health_details`
+- Contains a single document named `main`.
+- Stores static health profile information used for disease risk calculations.
+
+---
+Generated on 2026-04-09

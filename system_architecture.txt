@@ -1,0 +1,57 @@
+# Sumo-Guard System Architecture
+
+This document describes the high-level architectural components of the Sumo-Guard application, detailing the interaction between the frontend, the prediction logic, and the cloud infrastructure.
+
+## mermaid
+graph TD
+    subgraph Client_Side [Client / Mobile App]
+        UI[React UI - Vite]
+        State[State Management - React Query/Context]
+        Auth[Auth Provider - Firebase SDK]
+        Engine[Prediction Engine - Client Side Logic]
+        Capacitor[Capacitor Bridge - Android Support]
+    end
+
+    subgraph Cloud_Infrastructure [Firebase Platform]
+        FirebaseAuth[Firebase Authentication]
+        Firestore[(Cloud Firestore - NoSQL)]
+        Hosting[Firebase Hosting]
+    end
+
+    User((User)) -- Interactions --> UI
+    UI -- Uses --> State
+    State -- Triggers --> Auth
+    State -- Data Fetch --> Firestore
+    Auth -- Identity --> FirebaseAuth
+    
+    UI -- Input --> Engine
+    Firestore -- Historical Data --> Engine
+    Engine -- Analysis --> UI
+
+    subgraph External
+        Android[Android OS]
+    end
+    Capacitor -- Native APIs --> Android
+
+## Component Breakdown
+
+### 1. Frontend System (React/Vite)
+- **Vite**: Serves as the build tool and development server for high-performance frontend delivery.
+- **React UI**: Built with a component-based architecture using modern hooks and functional components.
+- **Tailwind CSS**: Provides the styling layer for a responsive, modern interface.
+- **React Query**: Handles the caching and synchronization of server-side data (Firestore) to minimize redundant network requests.
+
+### 2. Analytical Core (Prediction Engine)
+- **Client-Side Logic**: To ensure privacy and speed, the risk analysis algorithms run directly on the user's device. 
+- **Data Modelling**: Transforms raw logs into structured disease risk profiles using physiological metrics and clinical heuristics.
+
+### 3. Backend-as-a-Service (Firebase)
+- **Firebase Auth**: Manages secure user registration, login, and session persistence.
+- **Cloud Firestore**: A real-time NoSQL database that stores user profile details and time-series logs (Sleep/Habits) in a hierarchical document structure.
+- **Security Rules**: Ensure that users can only access their own data sub-collections.
+
+### 4. Native Integration (Capacitor)
+- **Capacitor**: Wraps the web application into a native Android container, allowing it to be deployed as an APK and potentially interact with native device sensors in future iterations.
+
+---
+Generated on 2026-04-09

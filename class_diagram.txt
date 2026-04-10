@@ -1,0 +1,113 @@
+# Sumo-Guard Project Class Diagram (Data Models)
+
+This document outlines the core data structures and their relationships in the Sumo-Guard application. Since this project is built with TypeScript and React, these "classes" are primarily implemented as Interfaces and Type definitions that map to Firestore documents.
+
+## mermaid
+classDiagram
+    class AuthUser {
+        +string id
+        +string name
+        +string email
+        +Lifestyle lifestyle
+        +boolean onboardingDone
+        +string createdAt
+    }
+
+    class Lifestyle {
+        +boolean isSmoker
+        +boolean isDrinker
+        +boolean isAlcoholic
+        +boolean hasChronicCondition
+        +string[] chronicConditions
+        +string activityLevel
+        +string dietType
+    }
+
+    class UserDoc {
+        +string name
+        +string email
+        +Record lifestyle
+        +boolean onboardingDone
+        +string createdAt
+    }
+
+    class UserProfile {
+        +string name
+        +number age
+        +string gender
+        +number weight
+        +number height
+        +string[] existingConditions
+        +string[] familyHistory
+        +string createdAt
+    }
+
+    class SleepLog {
+        +string id
+        +string bedtime
+        +string wakeTime
+        +number durationHours
+        +string quality
+        +string notes
+        +string date
+        +string createdAt
+    }
+
+    class HabitLog {
+        +string id
+        +string date
+        +number exerciseMinutes
+        +number waterGlasses
+        +number fruitVeggieServings
+        +number screenTimeHours
+        +number stressLevel
+        +number smokingCigarettes
+        +number alcoholDrinks
+        +number meditationMinutes
+        +string notes
+        +string createdAt
+    }
+
+    class DiseaseRisk {
+        +string diseaseName
+        +string riskLevel
+        +number riskScore
+        +string predictedTimeframe
+        +string[] contributingFactors
+        +string[] recommendations
+    }
+
+    AuthUser "1" -- "1" Lifestyle : contains
+    UserDoc "1" -- "1" Lifestyle : contains (as Record)
+    AuthUser "1" -- "0..*" SleepLog : has many (sub-collection)
+    AuthUser "1" -- "0..*" HabitLog : has many (sub-collection)
+    AuthUser "1" -- "1" UserProfile : has (sub-collection/main)
+    DiseaseRisk ..> SleepLog : calculated from
+    DiseaseRisk ..> HabitLog : calculated from
+    DiseaseRisk ..> UserProfile : calculated from
+
+## Detailed Descriptions
+
+### 1. User Identity & Session
+- **AuthUser**: Represents the currently logged-in user in the frontend application.
+- **UserDoc**: The root document structure stored in the `users` collection in Firestore.
+
+### 2. Health & Lifestyle
+- **Lifestyle**: Captured during onboarding. Tracks basic habits like smoking, drinking, and chronic conditions.
+- **UserProfile**: A more detailed profile stored in the `users/{uid}/user_health_details/main` document. Includes metrics like BMI (weight/height), age, and family history.
+
+### 3. Activity Logs
+- **SleepLog**: Daily records of sleep duration and quality. Stored in `users/{uid}/sleepLogs`.
+- **HabitLog**: Daily records of habits (water, exercise, stress, etc.). Stored in `users/{uid}/habitLogs`.
+
+### 4. Prediction Engine
+- **DiseaseRisk**: Not a stored entity, but a structure returned by the `analyzePredictions` function. It evaluates risk for:
+    - Cardiovascular Disease
+    - Type 2 Diabetes
+    - Chronic Sleep Disorder
+    - Anxiety & Depression
+    - Hypertension
+    - Respiratory / Lung Disease
+
+---
+Generated on 2026-04-09

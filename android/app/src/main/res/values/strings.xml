@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">sumo-guard</string>
+    <string name="title_activity_main">sumo-guard</string>
+    <string name="package_name">com.sumoguard.app</string>
+    <string name="custom_url_scheme">com.sumoguard.app</string>
+</resources>

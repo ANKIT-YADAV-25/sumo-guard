@@ -1,0 +1,45 @@
+# Sumo-Guard Sequence Diagram (Data Analysis Flow)
+
+This diagram illustrates the sequence of events when a user views their health predictions. It shows how the frontend interacts with Firestore and the internal prediction engine.
+
+## mermaid
+sequenceDiagram
+    participant User
+    participant UI as Predictions Page
+    participant FS as Cloud Firestore
+    participant Engine as Predictions Engine (lib/predictions.ts)
+
+    User->>UI: Navigages to /predictions
+    UI->>FS: Fetch Sleep Logs (getSleepLogs)
+    FS-->>UI: Return latest 50 logs
+    UI->>FS: Fetch Habit Logs (getHabitLogs)
+    FS-->>UI: Return latest 50 logs
+    UI->>FS: Fetch Health Profile (getProfile)
+    FS-->>UI: Return user metrics (BMI, history, etc.)
+
+    UI->>Engine: analyzePredictions(sleepLogs, habitLogs, profile)
+    activate Engine
+    Note over Engine: Calculate Overal Health Score
+    Note over Engine: Evaluate 6 Disease Risk Categories
+    Note over Engine: Generate Recommendations
+    Engine-->>UI: Returns { score, diseases, summary, dataInsufficient }
+    deactivate Engine
+
+    alt Data Insufficient (< 3 logs)
+        UI->>User: Show "More data required" warning
+    else Data Sufficient
+        UI->>User: Display Health Dashboard & Risk Analysis
+    end
+
+## Flow Description
+
+1.  **Trigger**: The sequence starts when the user enters the Predictions page or when a new log is added.
+2.  **Data Retrieval**: The application concurrently fetches three streams of data from Firestore:
+    *   **Sleep Logs**: Time-series data of sleep quality and duration.
+    *   **Habit Logs**: Daily lifestyle tracking (exercise, water, stress).
+    *   **Health Profile**: Static physiological data (age, weight, height) and family history.
+3.  **Processing**: The `analyzePredictions` function (local to the client) acts as the logic core. It processes the raw data into formatted risks and scores.
+4.  **Presentation**: The UI conditionally renders based on whether the `dataInsufficient` flag is returned, ensuring users aren't shown inaccurate predictions based on too little data.
+
+---
+Generated on 2026-04-09

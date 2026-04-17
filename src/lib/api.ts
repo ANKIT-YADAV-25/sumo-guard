@@ -144,24 +144,37 @@ export function useGetPredictions() {
 export function useGetStatistics(params: { period: string, date: string }) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["/api/statistics", user?.id, params.period],
+    queryKey: ["/api/statistics", user?.id, params.period, params.date],
     queryFn: async () => {
       const habits = await getHabitLogs(user!.id);
+      
+      const filteredHabits = habits.filter(h => {
+        if (params.period === "day") {
+          return h.date === params.date;
+        } else {
+          // Month selection
+          const logDate = new Date(h.date);
+          const targetDate = new Date(params.date);
+          return logDate.getMonth() === targetDate.getMonth() && 
+                 logDate.getFullYear() === targetDate.getFullYear();
+        }
+      });
+
       // Construct habit data mapping
-      const habitData = habits.slice(0, params.period === "month" ? 30 : 7).reverse().map(h => ({
+      const habitData = filteredHabits.reverse().map(h => ({
         label: format(new Date(h.date), "MMM d"),
         exerciseMinutes: h.exerciseMinutes,
         stressLevel: h.stressLevel
       }));
       
-      const avgExerciseMinutes = habits.length ? Math.round(habits.reduce((a, b) => a + b.exerciseMinutes, 0) / habits.length) : 0;
-      const avgWaterGlasses = habits.length ? Math.round(habits.reduce((a, b) => a + b.waterGlasses, 0) / habits.length) : 0;
-      const avgStressLevel = habits.length ? Math.round(habits.reduce((a, b) => a + b.stressLevel, 0) / habits.length) : 0;
+      const avgExerciseMinutes = filteredHabits.length ? Math.round(filteredHabits.reduce((a, b) => a + b.exerciseMinutes, 0) / filteredHabits.length) : 0;
+      const avgWaterGlasses = filteredHabits.length ? Math.round(filteredHabits.reduce((a, b) => a + b.waterGlasses, 0) / filteredHabits.length) : 0;
+      const avgStressLevel = filteredHabits.length ? Math.round(filteredHabits.reduce((a, b) => a + b.stressLevel, 0) / filteredHabits.length) : 0;
       
       return {
         habitData,
         averages: { avgExerciseMinutes, avgWaterGlasses, avgStressLevel },
-        habitLogsCount: habits.length
+        habitLogsCount: filteredHabits.length
       };
     },
     enabled: !!user?.id,

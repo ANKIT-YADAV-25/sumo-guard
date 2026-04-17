@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useGetStatistics, useGetPredictions } from "@/lib/api";
-import { format } from "date-fns";
+import { format, startOfYear, eachMonthOfInterval, endOfYear, parseISO, isSameMonth } from "date-fns";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -11,11 +11,18 @@ import {
   Zap, Droplets, Brain, TrendingUp, TrendingDown,
   Wifi, ChevronRight, AlertTriangle,
   CheckCircle2, Target, Activity, Heart, ChevronDown, ChevronUp, Lightbulb,
-  Loader2,
+  Loader2, Calendar
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PremiumCard, PageHeader } from "@/components/shared";
 import { X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const RISK_COLORS: Record<string, string> = {
   critical: "#ef4444",
@@ -172,9 +179,11 @@ function DiseaseCard({ disease, index }: { disease: any; index: number }) {
 
 export default function Statistics() {
   const [period, setPeriod] = useState("day");
-  const today = format(new Date(), "yyyy-MM-dd");
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const { data: stats, isLoading: statsLoading } = useGetStatistics({ period, date: today });
+  const formattedDate = format(selectedDate, "yyyy-MM-dd");
+
+  const { data: stats, isLoading: statsLoading } = useGetStatistics({ period, date: formattedDate });
   const { data: predictions, isLoading: predLoading } = useGetPredictions();
 
   const habitData = stats?.habitData ?? [];
@@ -214,16 +223,56 @@ export default function Statistics() {
 
 
       {/* Period tabs */}
-      <div className="flex gap-1 p-1 rounded-2xl border border-white/5 mb-8" style={{ background: "rgba(15,23,42,0.6)" }}>
-        {PERIODS.map((p) => (
-          <button key={p.key} onClick={() => setPeriod(p.key)}
-            className="flex-1 py-2 text-xs font-black rounded-xl transition-all duration-200"
-            style={period === p.key
-              ? { background: "linear-gradient(135deg, #f59e0b, #f97316)", color: "#0f172a", boxShadow: "0 0 12px rgba(245,158,11,0.4)" }
-              : { color: "rgba(255,255,255,0.35)" }}>
-            {p.label}
-          </button>
-        ))}
+      <div className="flex flex-col gap-3 mb-8">
+        <div className="flex gap-1 p-1 rounded-2xl border border-white/5" style={{ background: "rgba(15,23,42,0.6)" }}>
+          {PERIODS.map((p) => (
+            <button key={p.key} onClick={() => setPeriod(p.key)}
+              className="flex-1 py-2 text-xs font-black rounded-xl transition-all duration-200"
+              style={period === p.key
+                ? { background: "linear-gradient(135deg, #f59e0b, #f97316)", color: "#0f172a", boxShadow: "0 0 12px rgba(245,158,11,0.4)" }
+                : { color: "rgba(255,255,255,0.35)" }}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Month Selector */}
+        <AnimatePresence>
+          {period === "month" && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="flex items-center gap-2 p-3 rounded-2xl border border-white/5 bg-white/5">
+                <Calendar size={14} className="text-amber-400 shrink-0" />
+                <Select
+                  value={format(selectedDate, "yyyy-MM")}
+                  onValueChange={(val) => setSelectedDate(parseISO(`${val}-01T12:00:00`))}
+                >
+                  <SelectTrigger className="flex-1 bg-transparent border-none text-white font-black text-xs h-auto p-0 focus:ring-0">
+                    <SelectValue placeholder="Select month" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
+                    {eachMonthOfInterval({
+                      start: startOfYear(new Date()),
+                      end: new Date()
+                    }).reverse().map((month) => (
+                      <SelectItem
+                        key={format(month, "yyyy-MM")}
+                        value={format(month, "yyyy-MM")}
+                        className="text-white/70 focus:text-white focus:bg-white/10"
+                      >
+                        {format(month, "MMMM yyyy")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Stat summary cards */}

@@ -1,57 +1,81 @@
 # Sumo-Guard System Architecture
 
-This document describes the high-level architectural components of the Sumo-Guard application, detailing the interaction between the frontend, the prediction logic, and the cloud infrastructure.
+This document describes the high-level architectural components of the Sumo-Guard application, detailing the interaction between the frontend, the analytical core, and the cloud infrastructure.
 
-## mermaid
-graph TD
-    subgraph Client_Side [Client / Mobile App]
-        UI[React UI - Vite]
-        State[State Management - React Query/Context]
-        Auth[Auth Provider - Firebase SDK]
-        Engine[Prediction Engine - Client Side Logic]
-        Capacitor[Capacitor Bridge - Android Support]
+## System Architecture Diagram (Mermaid)
+
+```mermaid
+flowchart TD
+    subgraph Client_App ["Client Side (React + Capacitor)"]
+        direction TB
+        subgraph UI_Layer ["Presentation Layer"]
+            ReactUI[React.js / Vite]
+            Tailwind[Tailwind CSS]
+            Recharts[Recharts Visualization]
+            Framer[Framer Motion Animations]
+        end
+        
+        subgraph Logic_Layer ["Application Logic"]
+            RQuery[React Query - Data Sync]
+            Engine[Prediction Engine - lib/predictions.ts]
+            Router[Wouter - Layout/Routing]
+        end
+        
+        subgraph Bridge_Layer ["Nativization"]
+            Capacitor[Capacitor.js]
+            Android[Android Native Container]
+        end
     end
 
-    subgraph Cloud_Infrastructure [Firebase Platform]
-        FirebaseAuth[Firebase Authentication]
+    subgraph Backend_Services ["Infrastructure (Firebase)"]
+        Auth[Firebase Authentication]
         Firestore[(Cloud Firestore - NoSQL)]
-        Hosting[Firebase Hosting]
+        Storage[Firebase Storage]
     end
 
-    User((User)) -- Interactions --> UI
-    UI -- Uses --> State
-    State -- Triggers --> Auth
-    State -- Data Fetch --> Firestore
-    Auth -- Identity --> FirebaseAuth
+    subgraph Deployment ["Distribution Pipeline"]
+        GH_Actions[GitHub Actions]
+        GH_Pages[GitHub Pages - Live Web]
+        APK[Compiled Android APK]
+    end
+
+    %% Interactions
+    User((User)) <--> ReactUI
+    ReactUI <--> RQuery
+    RQuery <--> Auth
+    RQuery <--> Firestore
     
-    UI -- Input --> Engine
+    ReactUI --> Engine
     Firestore -- Historical Data --> Engine
-    Engine -- Analysis --> UI
+    Engine -- Calculated Risks --> ReactUI
+    
+    ReactUI <--> Capacitor
+    Capacitor <--> Android
+    
+    GH_Actions -- "CI/CD Build" --> GH_Pages
+    APK -- "Installation" --> Android
+```
 
-    subgraph External
-        Android[Android OS]
-    end
-    Capacitor -- Native APIs --> Android
+## Component Descriptions
 
-## Component Breakdown
-
-### 1. Frontend System (React/Vite)
-- **Vite**: Serves as the build tool and development server for high-performance frontend delivery.
-- **React UI**: Built with a component-based architecture using modern hooks and functional components.
-- **Tailwind CSS**: Provides the styling layer for a responsive, modern interface.
-- **React Query**: Handles the caching and synchronization of server-side data (Firestore) to minimize redundant network requests.
+### 1. Presentation Layer (Vite + React)
+- **Vite**: Modern frontend build tool ensuring fast development and optimized production bundles.
+- **Tailwind CSS**: Utility-first CSS framework for a consistent, premium design system.
+- **Recharts & Framer Motion**: Utilized for dynamic data visualization and smooth UI transitions to enhance user engagement.
 
 ### 2. Analytical Core (Prediction Engine)
-- **Client-Side Logic**: To ensure privacy and speed, the risk analysis algorithms run directly on the user's device. 
-- **Data Modelling**: Transforms raw logs into structured disease risk profiles using physiological metrics and clinical heuristics.
+- **Local Processing**: All disease risk calculations are performed client-side in `lib/predictions.ts`. This ensures zero-latency analysis and preserves user privacy.
+- **Algorithm**: Processes weighted sleep logs, lifestyle habits, and physiological profiles (BMI, family history) to generate a dynamic "Health Score".
 
-### 3. Backend-as-a-Service (Firebase)
-- **Firebase Auth**: Manages secure user registration, login, and session persistence.
-- **Cloud Firestore**: A real-time NoSQL database that stores user profile details and time-series logs (Sleep/Habits) in a hierarchical document structure.
-- **Security Rules**: Ensure that users can only access their own data sub-collections.
+### 3. Data & Identity (Firebase)
+- **Authentication**: Managed via Firebase SDK, supporting persistent secure sessions.
+- **Cloud Firestore**: Stores all time-series health data (sleep/habits) and user profile information in a hierarchical NoSQL structure.
+- **React Query**: Acts as the middleware between Firestore and the UI, managing caching and offline data optimistic updates.
 
-### 4. Native Integration (Capacitor)
-- **Capacitor**: Wraps the web application into a native Android container, allowing it to be deployed as an APK and potentially interact with native device sensors in future iterations.
+### 4. Cross-Platform Strategy
+- **Capacitor**: Enables the same React codebase to run as a native Android application.
+- **GitHub Pages**: (Planned) Serves the web-accessible version of the application with automated deployment via GitHub Actions.
 
 ---
-Generated on 2026-04-09
+Generated by Antigravity AI
+Date: 2026-04-10

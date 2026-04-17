@@ -3,11 +3,7 @@ import { useGetPredictions } from "@/lib/api";
 import { PremiumCard, PageHeader } from "@/components/shared";
 import { AlertTriangle, Brain, Shield, ChevronDown, ChevronUp, Clock, Lightbulb } from "lucide-react";
 import { Link } from "wouter";
-import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList,
-  RadialBarChart, RadialBar, Legend,
-} from "recharts";
+
 
 const RISK_STYLES = {
   critical: { color: "#ef4444", glow: "rgba(239,68,68,0.4)", bg: "bg-red-500/10", border: "border-red-500/40", badge: "bg-red-500/20 text-red-400 border-red-500/30" },
@@ -16,33 +12,7 @@ const RISK_STYLES = {
   low:      { color: "#22c55e", glow: "rgba(34,197,94,0.4)",  bg: "bg-green-500/10",  border: "border-green-500/40",  badge: "bg-green-500/20 text-green-400 border-green-500/30" },
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-slate-900/95 backdrop-blur border border-white/10 rounded-xl p-3 shadow-xl text-sm">
-        <p className="text-white/60 mb-1 font-bold">{label}</p>
-        {payload.map((p: any, i: number) => (
-          <p key={i} style={{ color: p.color }} className="font-black">
-            {p.value}% risk
-          </p>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
 
-const RadarTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-slate-900/95 backdrop-blur border border-amber-500/20 rounded-xl p-3 shadow-xl text-sm">
-        <p className="text-white font-black">{payload[0]?.payload?.disease}</p>
-        <p className="text-amber-400 font-bold">{payload[0]?.value}% risk</p>
-      </div>
-    );
-  }
-  return null;
-};
 
 function DiseaseCard({ disease, idx }: { disease: any; idx: number }) {
   const [expanded, setExpanded] = useState(false);
@@ -50,71 +20,47 @@ function DiseaseCard({ disease, idx }: { disease: any; idx: number }) {
 
   return (
     <div
-      className={`rounded-2xl border ${style.border} ${style.bg} p-5 transition-all duration-300`}
-      style={{ boxShadow: `0 0 20px ${style.glow}20` }}
+      className={`rounded-xl border ${style.border} ${style.bg} p-4 transition-all duration-300 cursor-pointer`}
+      style={{ boxShadow: `0 0 15px ${style.glow}15` }}
+      onClick={() => setExpanded(!expanded)}
     >
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1 pr-3">
-          <h4 className="font-black text-white text-base leading-tight mb-2">{disease.diseaseName}</h4>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${style.badge}`}>
-              {disease.riskLevel} risk
-            </span>
-            <span className="flex items-center gap-1 text-[10px] text-white/40 font-bold uppercase tracking-wider">
-              <Clock size={10} /> {disease.predictedTimeframe}
-            </span>
-          </div>
-        </div>
-        <div className="text-right shrink-0">
-          <span className="font-black text-4xl leading-none" style={{ color: style.color }}>
-            {disease.riskScore}
+      <div className="flex justify-between items-center">
+        <h4 className="font-black text-white text-sm">{disease.diseaseName}</h4>
+        <div className="flex items-center gap-3">
+          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${style.badge}`}>
+            {disease.riskLevel} risk
           </span>
-          <span className="text-white/40 text-sm font-bold">%</span>
+          {expanded ? <ChevronUp size={16} className="text-white/40" /> : <ChevronDown size={16} className="text-white/40" />}
         </div>
       </div>
-
-      {/* Mini radial progress */}
-      <div className="w-full bg-slate-800/60 rounded-full h-2.5 mb-4 overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-1000"
-          style={{
-            width: `${disease.riskScore}%`,
-            background: `linear-gradient(90deg, ${style.color}80, ${style.color})`,
-            boxShadow: `0 0 10px ${style.glow}`,
-          }}
-        />
-      </div>
-
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors font-bold uppercase tracking-wider w-full"
-      >
-        {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        {expanded ? "Hide" : "Show"} factors & tips
-      </button>
 
       {expanded && (
-        <div className="mt-4 space-y-4 border-t border-white/5 pt-4">
+        <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-4 cursor-default" onClick={e => e.stopPropagation()}>
+          {/* First Column: Tips */}
           <div>
-            <p className="text-[10px] text-white/40 font-black uppercase tracking-widest mb-2">Contributing Factors</p>
+            <p className="text-[10px] flex items-center gap-1.5 font-black uppercase tracking-widest text-amber-400 mb-2">
+              <Lightbulb size={12} /> Improvement Tips
+            </p>
             <div className="space-y-1.5">
-              {disease.contributingFactors.map((f: string, i: number) => (
-                <div key={i} className="flex items-start gap-2 text-xs text-white/60">
-                  <div className="w-1.5 h-1.5 rounded-full mt-1 shrink-0" style={{ backgroundColor: style.color }} />
-                  {f}
+              {disease.recommendations.map((rec: string, index: number) => (
+                <div key={index} className="flex items-start gap-2 text-[10px] text-white/60 leading-relaxed italic">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400/50 mt-1 shrink-0" />
+                  <span>{rec}</span>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Second Column: Factors */}
           <div>
-            <p className="text-[10px] text-white/40 font-black uppercase tracking-widest mb-2 flex items-center gap-1">
-              <Lightbulb size={10} /> Recommendations
+            <p className="text-[10px] flex items-center gap-1.5 font-black uppercase tracking-widest text-[#f97316] mb-2">
+              <AlertTriangle size={12} /> Show Factors
             </p>
             <div className="space-y-1.5">
-              {disease.recommendations.map((r: string, i: number) => (
-                <div key={i} className="flex items-start gap-2 text-xs text-white/60">
-                  <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1 shrink-0" />
-                  {r}
+              {disease.contributingFactors.map((f: string, index: number) => (
+                <div key={index} className="flex items-start gap-2 text-[10px] text-white/60 leading-relaxed">
+                  <div className="w-1.5 h-1.5 rounded-full mt-1 shrink-0" style={{ backgroundColor: style.color }} />
+                  <span>{f}</span>
                 </div>
               ))}
             </div>
@@ -127,7 +73,7 @@ function DiseaseCard({ disease, idx }: { disease: any; idx: number }) {
 
 export default function Predictions() {
   const { data: predictions, isLoading, error } = useGetPredictions();
-  const [activeChart, setActiveChart] = useState<"radar" | "bar" | "radial">("bar");
+  const [view, setView] = useState<"factor" | "tip" | null>(null);
 
   if (isLoading) {
     return (
@@ -175,31 +121,6 @@ export default function Predictions() {
   }
 
   const diseases = predictions.diseases;
-
-  // Data for radar chart
-  const radarData = diseases.map(d => ({
-    disease: d.diseaseName.split(" ")[0],
-    risk: d.riskScore,
-    fullName: d.diseaseName,
-  }));
-
-  // Data for ranked bar chart
-  const barData = [...diseases]
-    .sort((a, b) => b.riskScore - a.riskScore)
-    .map(d => ({
-      name: d.diseaseName.split("(")[0].split("/")[0].trim().split(" ").slice(0, 2).join(" "),
-      risk: d.riskScore,
-      riskLevel: d.riskLevel,
-      color: RISK_STYLES[d.riskLevel as keyof typeof RISK_STYLES]?.color || "#22c55e",
-    }));
-
-  // Data for radial bar chart
-  const radialData = diseases.map((d, i) => ({
-    name: d.diseaseName.split(" ")[0],
-    value: d.riskScore,
-    fill: RISK_STYLES[d.riskLevel as keyof typeof RISK_STYLES]?.color || "#22c55e",
-  }));
-
   const score = predictions.overallHealthScore;
   const scoreColor = score >= 75 ? "#22c55e" : score >= 50 ? "#f59e0b" : "#ef4444";
   const scoreGlow = score >= 75 ? "rgba(34,197,94,0.4)" : score >= 50 ? "rgba(245,158,11,0.4)" : "rgba(239,68,68,0.4)";
@@ -249,132 +170,78 @@ export default function Predictions() {
         </div>
       </div>
 
-      {/* Chart Toggle */}
-      <div className="flex gap-2 bg-slate-900/60 rounded-xl p-1 border border-white/5">
-        {(["bar", "radar", "radial"] as const).map(type => (
-          <button
-            key={type}
-            onClick={() => setActiveChart(type)}
-            className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-lg transition-all duration-300 ${
-              activeChart === type
-                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 shadow-lg"
-                : "text-white/40 hover:text-white/70"
-            }`}
-          >
-            {type === "bar" ? "Ranked" : type === "radar" ? "Radar" : "Radial"}
-          </button>
-        ))}
+      {/* Toggle View */}
+      <div className="flex gap-1 p-1 rounded-2xl border border-white/5" style={{ background: "rgba(15,23,42,0.6)" }}>
+        <button
+          onClick={() => setView(view === "factor" ? null : "factor")}
+          className="flex-1 py-3 text-xs font-black rounded-xl transition-all duration-200 uppercase tracking-widest"
+          style={view === "factor" ? { background: "linear-gradient(135deg, #f59e0b, #f97316)", color: "#0f172a", boxShadow: "0 0 12px rgba(245,158,11,0.4)" } : { color: "rgba(255,255,255,0.35)" }}
+        >
+          Show Factor
+        </button>
+        <button
+          onClick={() => setView(view === "tip" ? null : "tip")}
+          className="flex-1 py-3 text-xs font-black rounded-xl transition-all duration-200 uppercase tracking-widest"
+          style={view === "tip" ? { background: "linear-gradient(135deg, #f59e0b, #f97316)", color: "#0f172a", boxShadow: "0 0 12px rgba(245,158,11,0.4)" } : { color: "rgba(255,255,255,0.35)" }}
+        >
+          Tip
+        </button>
       </div>
 
-      {/* RANKED BAR CHART */}
-      {activeChart === "bar" && (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5"
-          style={{ boxShadow: "0 0 30px rgba(245,158,11,0.05)" }}>
-          <p className="text-xs font-black uppercase tracking-widest text-white/40 mb-5">Risk Score Ranking</p>
-          <div style={{ height: barData.length * 52 + 20 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} layout="vertical" margin={{ top: 0, right: 50, left: 0, bottom: 0 }}>
-                <defs>
-                  {barData.map((d, i) => (
-                    <linearGradient key={i} id={`grad-${i}`} x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor={d.color} stopOpacity={0.3} />
-                      <stop offset="100%" stopColor={d.color} stopOpacity={1} />
-                    </linearGradient>
-                  ))}
-                </defs>
-                <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis type="number" domain={[0, 100]} axisLine={false} tickLine={false}
-                  tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: "bold" }} />
-                <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={90}
-                  tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: "bold" }} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
-                <Bar dataKey="risk" radius={[0, 8, 8, 0]} maxBarSize={28}>
-                  <LabelList dataKey="risk" position="right"
-                    formatter={(v: number) => `${v}%`}
-                    style={{ fill: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 900 }} />
-                  {barData.map((entry, i) => (
-                    <Cell key={i} fill={`url(#grad-${i})`}
-                      style={{ filter: `drop-shadow(0 0 6px ${entry.color}60)` }} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+      {/* View Content */}
+      {view && (
+        <div className="rounded-2xl border border-white/10 p-5 bg-slate-900/40">
+          <p className="text-[10px] flex items-center gap-1.5 font-black uppercase tracking-widest text-white/50 mb-5 pb-3 border-b border-white/10">
+            {view === "factor" ? <AlertTriangle size={14} className="text-amber-400" /> : <Lightbulb size={14} className="text-teal-400" />}
+            {view === "factor" ? "Contributing Factors Overview" : "Improvement Tips Overview"}
+          </p>
+          <div className="space-y-6">
+            {diseases.map((disease, idx) => {
+              const style = RISK_STYLES[disease.riskLevel as keyof typeof RISK_STYLES] || RISK_STYLES.low;
+              
+              // Only show diseases that have at least one factor or tip to display based on the selection
+              const hasItems = view === "factor" ? disease.contributingFactors.length > 0 : disease.recommendations.length > 0;
+              if (!hasItems) return null;
 
-      {/* RADAR CHART */}
-      {activeChart === "radar" && (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5"
-          style={{ boxShadow: "0 0 30px rgba(99,102,241,0.05)" }}>
-          <p className="text-xs font-black uppercase tracking-widest text-white/40 mb-2">Risk Overview</p>
-          <div className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
-                <defs>
-                  <linearGradient id="radarGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.6} />
-                    <stop offset="100%" stopColor="#f97316" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <PolarGrid stroke="rgba(255,255,255,0.08)" />
-                <PolarAngleAxis dataKey="disease"
-                  tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: "bold" }} />
-                <PolarRadiusAxis domain={[0, 100]} axisLine={false} tick={false} />
-                <Tooltip content={<RadarTooltip />} />
-                <Radar name="Risk" dataKey="risk" stroke="#f59e0b" strokeWidth={2}
-                  fill="url(#radarGrad)"
-                  style={{ filter: "drop-shadow(0 0 8px rgba(245,158,11,0.5))" }} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {/* RADIAL BAR CHART */}
-      {activeChart === "radial" && (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5"
-          style={{ boxShadow: "0 0 30px rgba(20,184,166,0.05)" }}>
-          <p className="text-xs font-black uppercase tracking-widest text-white/40 mb-2">Risk by Disease</p>
-          <div className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadialBarChart
-                cx="50%" cy="50%"
-                innerRadius="15%" outerRadius="90%"
-                data={radialData}
-                startAngle={90} endAngle={-270}
-              >
-                <RadialBar
-                  dataKey="value"
-                  cornerRadius={6}
-                  background={{ fill: "rgba(255,255,255,0.03)" }}
-                  label={{ position: "insideStart", fill: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: "bold",
-                    formatter: (v: number) => `${v}%` }}
-                />
-                <Legend
-                  iconSize={8}
-                  iconType="circle"
-                  formatter={(value, entry: any) => (
-                    <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: "bold" }}>
-                      {entry.payload.name}
+              return (
+                <div key={idx}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className="text-sm font-black text-white">{disease.diseaseName}</h4>
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${style.badge}`}>
+                      {disease.riskLevel}
                     </span>
-                  )}
-                />
-                <Tooltip content={<CustomTooltip />} />
-              </RadialBarChart>
-            </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-1.5 pl-2">
+                    {view === "factor" ? 
+                      disease.contributingFactors.map((f: string, i: number) => (
+                        <div key={i} className="flex items-start gap-2 text-xs text-white/60">
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: style.color }} />
+                          <span>{f}</span>
+                        </div>
+                      ))
+                    :
+                      disease.recommendations.map((r: string, i: number) => (
+                        <div key={i} className="flex items-start gap-2 text-xs text-white/60">
+                          <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 shrink-0" />
+                          <span>{r}</span>
+                        </div>
+                      ))
+                    }
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Individual Disease Cards */}
+      {/* Detailed Breakdown */}
       <div>
         <h3 className="text-base font-black text-white mb-4 flex items-center gap-2">
           <Brain size={16} className="text-amber-400" />
           Detailed Breakdown
-          <span className="text-xs text-white/30 font-bold">(tap to expand)</span>
         </h3>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {diseases.map((disease, idx) => (
             <DiseaseCard key={idx} disease={disease} idx={idx} />
           ))}

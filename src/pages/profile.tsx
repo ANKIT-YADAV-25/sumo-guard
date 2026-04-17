@@ -94,9 +94,6 @@ export default function Profile() {
   }
 
   const lifestyle = user?.lifestyle || {};
-  const bmi = form.height > 0 ? Math.round((form.weight / (form.height / 100) ** 2) * 10) / 10 : 0;
-  const bmiLabel = bmi < 18.5 ? "Underweight" : bmi < 25 ? "Healthy" : bmi < 30 ? "Overweight" : "Obese";
-  const bmiColor = bmi < 18.5 ? "#6366f1" : bmi < 25 ? "#22c55e" : bmi < 30 ? "#f59e0b" : "#ef4444";
 
   if (isLoading) {
     return (
@@ -167,21 +164,11 @@ export default function Profile() {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-4 gap-2 mt-4">
+        <div className="grid grid-cols-3 gap-2 mt-4">
           <InfoChip icon={<Calendar size={16} />} label="Age" value={form.age || "—"} color="#6366f1" />
           <InfoChip icon={<Ruler size={16} />} label="Height" value={form.height ? `${form.height}cm` : "—"} color="#14b8a6" />
           <InfoChip icon={<Weight size={16} />} label="Weight" value={form.weight ? `${form.weight}kg` : "—"} color="#f59e0b" />
-          <InfoChip icon={<Activity size={16} />} label="BMI" value={bmi || "—"} color={bmiColor} />
         </div>
-
-        {form.height > 0 && form.weight > 0 && (
-          <div className="mt-3 flex items-center justify-center gap-2">
-            <div className="h-1.5 flex-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (bmi / 40) * 100)}%`, background: `linear-gradient(90deg, ${bmiColor}60, ${bmiColor})` }} />
-            </div>
-            <span className="text-xs font-black shrink-0" style={{ color: bmiColor }}>{bmiLabel}</span>
-          </div>
-        )}
       </div>
 
       {/* Lifestyle section */}

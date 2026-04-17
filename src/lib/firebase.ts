@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDG4i0E_sIG9gdQaA9uLs8xfRa3nRwYZKw",
-  authDomain: "sumo-guard.firebaseapp.com",
-  projectId: "sumo-guard",
-  storageBucket: "sumo-guard.firebasestorage.app",
-  messagingSenderId: "184935123550",
-  appId: "1:184935123550:web:ae6b573dff15f54779c2cf",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);

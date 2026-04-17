@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 export default defineConfig({
-  base: "/",
+  base: process.env.NODE_ENV === "production" ? "/sumo-guard/" : "/",
   plugins: [
     react(),
     tailwindcss(),

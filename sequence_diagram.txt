@@ -1,45 +1,78 @@
-# Sumo-Guard Sequence Diagram (Data Analysis Flow)
+# Sumo-Guard Sequence Diagram (Daily Health Tracking & Prediction)
 
-This diagram illustrates the sequence of events when a user views their health predictions. It shows how the frontend interacts with Firestore and the internal prediction engine.
+This diagram outlines the complete flow from user data entry to health risk prediction within the Sumo-Guard application.
 
-## mermaid
+## Mermaid Diagram
+
+```mermaid
 sequenceDiagram
+    autonumber
     participant User
-    participant UI as Predictions Page
-    participant FS as Cloud Firestore
-    participant Engine as Predictions Engine (lib/predictions.ts)
+    participant Frontend as React/Vite Frontend
+    participant Auth as Firebase Authentication
+    participant Firestore as Cloud Firestore
+    participant Engine as Prediction Engine (lib/predictions.ts)
 
-    User->>UI: Navigages to /predictions
-    UI->>FS: Fetch Sleep Logs (getSleepLogs)
-    FS-->>UI: Return latest 50 logs
-    UI->>FS: Fetch Habit Logs (getHabitLogs)
-    FS-->>UI: Return latest 50 logs
-    UI->>FS: Fetch Health Profile (getProfile)
-    FS-->>UI: Return user metrics (BMI, history, etc.)
+    Note over User, Auth: Authentication Flow
+    User->>Frontend: Open App
+    Frontend->>Auth: Check session status
+    Auth-->>Frontend: Session active (UID: 123)
 
-    UI->>Engine: analyzePredictions(sleepLogs, habitLogs, profile)
+    Note over User, Firestore: Habit Logging Flow
+    User->>Frontend: Navigate to /habits
+    User->>Frontend: Enter exercise, water, stress data
+    User->>Frontend: Click "Save Habit Log"
+    Frontend->>Firestore: setDoc(users/123/habitLogs/{date}, data)
+    Firestore-->>Frontend: Success (200 OK)
+    Frontend-->>User: Show confirmation toast
+
+    Note over User, Engine: Prediction & Analysis Flow
+    User->>Frontend: Navigate to /predictions
+    activate Frontend
+    Frontend->>Firestore: getDocs(users/123/sleepLogs)
+    Frontend->>Firestore: getDocs(users/123/habitLogs)
+    Frontend->>Firestore: getDoc(users/123/user_health_details/main)
+    Firestore-->>Frontend: Array of logs + Profile data
+    
+    Frontend->>Engine: analyzePredictions(sleeps, habits, profile)
     activate Engine
-    Note over Engine: Calculate Overal Health Score
-    Note over Engine: Evaluate 6 Disease Risk Categories
-    Note over Engine: Generate Recommendations
-    Engine-->>UI: Returns { score, diseases, summary, dataInsufficient }
+    Note over Engine: Calculate Risk Scores (0-100)
+    Note over Engine: Map categories (Diabetes, Heart, etc.)
+    Engine-->>Frontend: { score, risks[], recommendations[] }
     deactivate Engine
+    
+    Frontend-->>User: Display Health Dashboard & Predictions
+    deactivate Frontend
 
-    alt Data Insufficient (< 3 logs)
-        UI->>User: Show "More data required" warning
-    else Data Sufficient
-        UI->>User: Display Health Dashboard & Risk Analysis
-    end
+    Note over User, Frontend: Real-time UI Updates
+    User->>Frontend: Update Sleep Log
+    Frontend->>Firestore: updateDoc(...)
+    Frontend->>Frontend: Invalidate React Query Cache
+    Frontend-->>User: Refresh Predictions automatically
+```
 
-## Flow Description
+## Detailed Flow Explanation
 
-1.  **Trigger**: The sequence starts when the user enters the Predictions page or when a new log is added.
-2.  **Data Retrieval**: The application concurrently fetches three streams of data from Firestore:
-    *   **Sleep Logs**: Time-series data of sleep quality and duration.
-    *   **Habit Logs**: Daily lifestyle tracking (exercise, water, stress).
-    *   **Health Profile**: Static physiological data (age, weight, height) and family history.
-3.  **Processing**: The `analyzePredictions` function (local to the client) acts as the logic core. It processes the raw data into formatted risks and scores.
-4.  **Presentation**: The UI conditionally renders based on whether the `dataInsufficient` flag is returned, ensuring users aren't shown inaccurate predictions based on too little data.
+### 1. Authentication
+The application uses **Firebase Auth** to ensure that health data is private and scoped to the specific user. Every subsequent database request includes the user's UID.
+
+### 2. Data Persistence (Habit Logging)
+When a user logs habits:
+*   The frontend uses `setDoc` with `merge: true` to either create or update the log for that specific date.
+*   Data points include exercise minutes, water intake, stress levels, smoking, alcohol, and meditation.
+
+### 3. Prediction Orchestration
+The **Predictions Engine** is a client-side logic layer. When the user views predictions:
+*   The frontend fetches historical data (up to the last 50 entries) for both habits and sleep.
+*   It fetches the user's static profile (age, weight, height, family history).
+*   The `analyzePredictions` function runs locally, ensuring low latency and privacy (data doesn't leave the client for processing).
+
+### 4. Risk Calculation Logic
+The engine evaluates:
+*   **Sleep Quality**: Duration vs. Bedtime consistency.
+*   **Habit Impact**: Correlates exercise/stress with known risk factors.
+*   **Physiological Risks**: BMI calculation and family history weighting.
 
 ---
-Generated on 2026-04-09
+Generated by Antigravity AI
+Date: 2026-04-10

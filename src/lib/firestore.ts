@@ -28,7 +28,7 @@ export async function getSleepLogs(uid: string): Promise<SleepLog[]> {
   const q = query(
     collection(db, "users", uid, "sleepLogs"),
     orderBy("createdAt", "desc"),
-    limit(50)
+    limit(500)
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as SleepLog));
@@ -50,7 +50,7 @@ export async function getHabitLogs(uid: string): Promise<HabitLog[]> {
   const q = query(
     collection(db, "users", uid, "habitLogs"),
     orderBy("createdAt", "desc"),
-    limit(50)
+    limit(500)
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as HabitLog));

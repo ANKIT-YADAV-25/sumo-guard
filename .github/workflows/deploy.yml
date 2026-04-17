@@ -59,6 +59,8 @@ jobs:
           echo "VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID" >> .env
 
       - name: Build Web Application
+        env:
+          VITE_BASE_URL: /sumo-guard/
         run: pnpm run build
 
       - name: Setup GitHub Pages

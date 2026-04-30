@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow a user to read and write any document that starts with /users/their_uid/
+    // This covers the user document itself and all sub-collections (sleepLogs, habitLogs, etc.)
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Explicitly match the user document for clarity (though covered by the wildcard above)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

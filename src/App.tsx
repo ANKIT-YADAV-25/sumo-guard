@@ -15,6 +15,7 @@ import Statistics from "@/pages/statistics";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Onboarding from "@/pages/onboarding";
+import SplashScreen from "@/components/ui/SplashScreen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,12 +31,7 @@ function ProtectedRouter() {
   const [, setLocation] = useLocation();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#080d14" }}>
-        <div className="w-12 h-12 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"
-          style={{ boxShadow: "0 0 20px rgba(245,158,11,0.3)" }} />
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   if (!user) {

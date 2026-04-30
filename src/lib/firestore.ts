@@ -15,8 +15,14 @@ export interface UserDoc {
 }
 
 export async function getUserDoc(uid: string): Promise<UserDoc | null> {
-  const snap = await getDoc(doc(db, "users", uid));
-  return snap.exists() ? (snap.data() as UserDoc) : null;
+  if (!uid) return null;
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    return snap.exists() ? (snap.data() as UserDoc) : null;
+  } catch (error) {
+    console.error("Error fetching user doc:", error);
+    throw error;
+  }
 }
 
 export async function setUserDoc(uid: string, data: Partial<UserDoc>) {
@@ -25,13 +31,18 @@ export async function setUserDoc(uid: string, data: Partial<UserDoc>) {
 
 // ── Sleep logs ──
 export async function getSleepLogs(uid: string): Promise<SleepLog[]> {
-  const q = query(
-    collection(db, "users", uid, "sleepLogs"),
-    orderBy("createdAt", "desc"),
-    limit(500)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as SleepLog));
+  if (!uid) return [];
+  try {
+    const q = query(
+      collection(db, "users", uid, "sleepLogs"),
+      limit(500)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as SleepLog));
+  } catch (error) {
+    console.error("Error fetching sleep logs:", error);
+    throw error;
+  }
 }
 
 export async function addSleepLog(uid: string, data: Omit<SleepLog, "id" | "createdAt">) {
@@ -47,13 +58,18 @@ export async function deleteSleepLog(uid: string, logId: string) {
 
 // ── Habit logs ──
 export async function getHabitLogs(uid: string): Promise<HabitLog[]> {
-  const q = query(
-    collection(db, "users", uid, "habitLogs"),
-    orderBy("createdAt", "desc"),
-    limit(500)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as HabitLog));
+  if (!uid) return [];
+  try {
+    const q = query(
+      collection(db, "users", uid, "habitLogs"),
+      limit(500)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as HabitLog));
+  } catch (error) {
+    console.error("Error fetching habit logs:", error);
+    throw error;
+  }
 }
 
 export async function addHabitLog(uid: string, data: Omit<HabitLog, "id" | "createdAt">) {
@@ -80,8 +96,14 @@ export interface UserProfile {
 }
 
 export async function getProfile(uid: string): Promise<UserProfile | null> {
-  const snap = await getDoc(doc(db, "users", uid, "user_health_details", "main"));
-  return snap.exists() ? (snap.data() as UserProfile) : null;
+  if (!uid) return null;
+  try {
+    const snap = await getDoc(doc(db, "users", uid, "user_health_details", "main"));
+    return snap.exists() ? (snap.data() as UserProfile) : null;
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    throw error;
+  }
 }
 
 export async function updateProfile(uid: string, data: Omit<UserProfile, "createdAt">) {

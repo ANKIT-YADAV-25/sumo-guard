@@ -55,15 +55,30 @@ async function buildAuthUser(firebaseUser: FirebaseUser): Promise<AuthUser> {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const skipNextAuthChange = React.useRef(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // Skip if we're in the middle of registration (the register function will set the user)
+        if (skipNextAuthChange.current) {
+          skipNextAuthChange.current = false;
+          setLoading(false);
+          return;
+        }
         try {
           const authUser = await buildAuthUser(firebaseUser);
           setUser(authUser);
         } catch {
-          setUser(null);
+          // If Firestore read fails (e.g. doc doesn't exist yet), set a minimal user
+          setUser({
+            id: firebaseUser.uid,
+            name: firebaseUser.displayName || "User",
+            email: firebaseUser.email || "",
+            lifestyle: {},
+            onboardingDone: false,
+            createdAt: firebaseUser.metadata.creationTime || new Date().toISOString(),
+          });
         }
       } else {
         setUser(null);
@@ -87,6 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function register(name: string, email: string, password: string): Promise<AuthUser> {
+    // Prevent onAuthStateChanged from racing with the Firestore write below
+    skipNextAuthChange.current = true;
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const now = new Date().toISOString();
     await setUserDoc(cred.user.uid, {

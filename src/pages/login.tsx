@@ -6,7 +6,7 @@ import { Eye, EyeOff, Shield, User, Lock, ArrowRight } from "lucide-react";
 export default function Login() {
   const { login } = useAuth();
   const [, setLocation] = useLocation();
-  const [nameOrEmail, setNameOrEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
@@ -17,7 +17,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await login(nameOrEmail, password);
+      await login(email, password);
       setLocation("/");
     } catch (err: any) {
       setError(err.message || "Login failed. Check your name and password.");
@@ -43,13 +43,13 @@ export default function Login() {
       {/* Logo */}
       <div className="flex flex-col items-center mb-10">
         <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4"
+          className="w-24 h-24 rounded-3xl flex items-center justify-center mb-4 overflow-hidden border border-white/10"
           style={{
             background: "linear-gradient(135deg, #f59e0b, #f97316)",
             boxShadow: "0 0 40px rgba(245,158,11,0.4)",
           }}
         >
-          <Shield className="w-10 h-10 text-white" />
+          <img src="/logo.png" alt="Sumo Guard Logo" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-3xl font-black text-white tracking-tight">Sumo Guard</h1>
         <p className="text-white/40 text-sm mt-1 font-medium">Your personal health guardian</p>
@@ -65,21 +65,21 @@ export default function Login() {
         }}
       >
         <h2 className="text-2xl font-black text-white mb-1">Welcome back</h2>
-        <p className="text-white/40 text-sm mb-7">Sign in with your name and password</p>
+        <p className="text-white/40 text-sm mb-7">Sign in with your email and password</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name field */}
+          {/* Email field */}
           <div>
             <label className="text-xs text-white/50 font-bold uppercase tracking-wider mb-2 block">
-              Your Name
+              Email
             </label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
               <input
-                type="text"
-                value={nameOrEmail}
-                onChange={(e) => setNameOrEmail(e.target.value)}
-                placeholder="John Doe"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 required
                 className="w-full pl-11 pr-4 py-3.5 rounded-xl text-white text-sm font-medium placeholder:text-white/20 outline-none border transition-all"
                 style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)" }}

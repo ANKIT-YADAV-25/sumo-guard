@@ -97,14 +97,17 @@ export default function Onboarding() {
     setForm(f => ({ ...f, chronicConditions: f.chronicConditions.filter(x => x !== c) }));
   }
 
+  const [error, setError] = useState("");
+
   async function handleFinish() {
     setLoading(true);
+    setError("");
     try {
       await saveOnboarding(form);
       setLocation("/");
-    } catch {
-      setLocation("/");
-    } finally {
+    } catch (err: any) {
+      console.error("Onboarding save failed:", err);
+      setError(err.message || "Failed to save. Please check your internet connection and try again.");
       setLoading(false);
     }
   }
@@ -231,6 +234,11 @@ export default function Onboarding() {
 
       {/* CTA */}
       <div className="mt-8">
+        {error && (
+          <div className="rounded-xl p-3 text-sm text-red-400 font-bold text-center border border-red-500/20 mb-4" style={{ background: "rgba(239,68,68,0.1)" }}>
+            {error}
+          </div>
+        )}
         {isLast ? (
           <button onClick={handleFinish} disabled={loading}
             className="w-full py-4 rounded-2xl font-black text-slate-900 text-base flex items-center justify-center gap-2"

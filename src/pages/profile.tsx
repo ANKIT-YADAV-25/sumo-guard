@@ -49,20 +49,20 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    age: 0,
+    age: "" as string | number,
     gender: "" as any,
-    weight: 0,
-    height: 0,
+    weight: "" as string | number,
+    height: "" as string | number,
   });
 
   useEffect(() => {
     if (profile) {
       setForm({
         name: user?.name || profile.name,
-        age: profile.age,
+        age: profile.age || "",
         gender: profile.gender as "male" | "female" | "other",
-        weight: profile.weight,
-        height: profile.height,
+        weight: profile.weight || "",
+        height: profile.height || "",
       });
     }
   }, [profile, user]);
@@ -72,6 +72,9 @@ export default function Profile() {
       {
         data: {
           ...form,
+          age: Number(form.age) || 0,
+          weight: Number(form.weight) || 0,
+          height: Number(form.height) || 0,
           existingConditions: profile?.existingConditions || [],
           familyHistory: profile?.familyHistory || [],
         },
@@ -253,7 +256,7 @@ export default function Profile() {
               <input
                 type="number"
                 value={form.age}
-                onChange={(e) => setForm(f => ({ ...f, age: Number(e.target.value) }))}
+                onChange={(e) => setForm(f => ({ ...f, age: e.target.value === "" ? "" : Number(e.target.value) }))}
                 className="w-full px-4 py-3 rounded-xl text-white text-sm font-bold outline-none border"
                 style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)" }}
               />
@@ -280,7 +283,7 @@ export default function Profile() {
                 <input
                   type="number"
                   value={form.weight}
-                  onChange={(e) => setForm(f => ({ ...f, weight: Number(e.target.value) }))}
+                  onChange={(e) => setForm(f => ({ ...f, weight: e.target.value === "" ? "" : Number(e.target.value) }))}
                   className="w-full px-4 py-3 rounded-xl text-white text-sm font-bold outline-none border"
                   style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)" }}
                 />
@@ -290,7 +293,7 @@ export default function Profile() {
                 <input
                   type="number"
                   value={form.height}
-                  onChange={(e) => setForm(f => ({ ...f, height: Number(e.target.value) }))}
+                  onChange={(e) => setForm(f => ({ ...f, height: e.target.value === "" ? "" : Number(e.target.value) }))}
                   className="w-full px-4 py-3 rounded-xl text-white text-sm font-bold outline-none border"
                   style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)" }}
                 />

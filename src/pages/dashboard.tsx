@@ -182,12 +182,12 @@ export default function Dashboard() {
   const isInitialLoading = (isLoading && !data) || (predLoading && !predictions);
   const hasData = !isInitialLoading && ((data?.sleepLogsCount ?? 0) > 0 || (data?.habitLogsCount ?? 0) > 0);
   const healthScore = predictions?.overallHealthScore ?? data?.healthScore ?? 0;
-  
+
   const scoreColor = isInitialLoading ? "rgba(255,255,255,0.1)" : !hasData ? "#94a3b8" : healthScore >= 70 ? "#22c55e" : healthScore >= 50 ? "#f59e0b" : "#ef4444";
   const scoreLabel = isInitialLoading ? "Loading..." : !hasData ? "No Data Yet" : healthScore >= 70 ? "Good Shape" : healthScore >= 50 ? "Moderate Risk" : "High Risk";
-  const scoreSummary = isInitialLoading 
-    ? "Calculating your health insights..." 
-    : !hasData 
+  const scoreSummary = isInitialLoading
+    ? "Calculating your health insights..."
+    : !hasData
       ? "Log your daily activities to start seeing your health risk analysis and score."
       : (predictions?.summary?.slice(0, 80) + ((predictions?.summary?.length ?? 0) > 80 ? "…" : ""));
 

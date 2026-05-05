@@ -49,7 +49,7 @@ export default function Login() {
             boxShadow: "0 0 40px rgba(245,158,11,0.4)",
           }}
         >
-          <img src="/logo.png" alt="Sumo Guard Logo" className="w-full h-full object-cover" />
+          <Shield size={48} className="text-white" strokeWidth={2.5} />
         </div>
         <h1 className="text-3xl font-black text-white tracking-tight">Sumo Guard</h1>
         <p className="text-white/40 text-sm mt-1 font-medium">Your personal health guardian</p>

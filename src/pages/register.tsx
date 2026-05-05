@@ -74,7 +74,7 @@ export default function Register() {
       <div className="flex flex-col items-center mb-8">
         <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-3 overflow-hidden border border-white/10"
           style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: "0 0 30px rgba(245,158,11,0.4)" }}>
-          <img src="/logo.png" alt="Sumo Guard Logo" className="w-full h-full object-cover" />
+          <Shield size={40} className="text-white" strokeWidth={2.5} />
         </div>
         <h1 className="text-2xl font-black text-white">Create Account</h1>
         <p className="text-white/40 text-sm mt-1">Start your health journey today</p>

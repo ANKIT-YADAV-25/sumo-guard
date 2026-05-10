@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useGetPredictions } from "@/lib/api";
 import { PremiumCard, PageHeader } from "@/components/shared";
 import { AlertTriangle, Brain, Shield, ChevronDown, ChevronUp, Clock, Lightbulb } from "lucide-react";
 import { Link } from "wouter";
+import { motion } from "framer-motion";
 
 
 const RISK_STYLES = {
-  critical: { color: "#ef4444", glow: "rgba(239,68,68,0.4)", bg: "bg-red-500/10", border: "border-red-500/40", badge: "bg-red-500/20 text-red-400 border-red-500/30" },
-  high:     { color: "#f97316", glow: "rgba(249,115,22,0.4)", bg: "bg-orange-500/10", border: "border-orange-500/40", badge: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
-  moderate: { color: "#f59e0b", glow: "rgba(245,158,11,0.4)", bg: "bg-amber-500/10", border: "border-amber-500/40", badge: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  low:      { color: "#22c55e", glow: "rgba(34,197,94,0.4)",  bg: "bg-green-500/10",  border: "border-green-500/40",  badge: "bg-green-500/20 text-green-400 border-green-500/30" },
+  critical: { color: "#ef4444", glow: "#ef4444", bg: "bg-red-500/10", border: "border-red-500/40", badge: "bg-red-500/20 text-red-400 border-red-500/30" },
+  high: { color: "#f97316", glow: "#f97316", bg: "bg-orange-500/10", border: "border-orange-500/40", badge: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
+  moderate: { color: "#f59e0b", glow: "#f59e0b", bg: "bg-amber-500/10", border: "border-amber-500/40", badge: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
+  low: { color: "#22c55e", glow: "#22c55e", bg: "bg-[#064e3b]/40", border: "border-[#10b981]/40", badge: "bg-[#064e3b] text-[#4ade80] border-[#10b981]/40" },
 };
 
 
@@ -20,22 +21,23 @@ function DiseaseCard({ disease, idx }: { disease: any; idx: number }) {
 
   return (
     <div
-      className={`rounded-xl border ${style.border} ${style.bg} p-4 transition-all duration-300 cursor-pointer`}
+      className={`rounded-xl border ${style.border} overflow-hidden transition-all duration-300`}
       style={{ boxShadow: `0 0 15px ${style.glow}15` }}
-      onClick={() => setExpanded(!expanded)}
     >
-      <div className="flex justify-between items-center">
-        <h4 className="font-black text-white text-sm">{disease.diseaseName}</h4>
-        <div className="flex items-center gap-3">
-          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${style.badge}`}>
-            {disease.riskLevel} risk
-          </span>
-          {expanded ? <ChevronUp size={16} className="text-white/40" /> : <ChevronDown size={16} className="text-white/40" />}
+      <div className={`p-4 ${style.bg} cursor-pointer`} onClick={() => setExpanded(!expanded)}>
+        <div className="flex justify-between items-center">
+          <h4 className="font-black text-white text-sm">{disease.diseaseName}</h4>
+          <div className="flex items-center gap-3">
+            <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${style.badge}`}>
+              {disease.riskLevel} risk
+            </span>
+            {expanded ? <ChevronUp size={16} className="text-white/40" /> : <ChevronDown size={16} className="text-white/40" />}
+          </div>
         </div>
       </div>
 
       {expanded && (
-        <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-4 cursor-default" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-t border-white/10 grid grid-cols-2 gap-4 cursor-default" onClick={e => e.stopPropagation()}>
           {/* First Column: Tips */}
           <div>
             <p className="text-[10px] flex items-center gap-1.5 font-black uppercase tracking-widest text-amber-400 mb-2">
@@ -75,11 +77,27 @@ export default function Predictions() {
   const { data: predictions, isLoading, error } = useGetPredictions();
   const [view, setView] = useState<"factor" | "tip" | null>(null);
 
-  if (isLoading) {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isLoading) setLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
+  if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="w-16 h-16 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"
-          style={{ boxShadow: "0 0 20px rgba(245,158,11,0.4)" }} />
+      <div className="h-full flex flex-col items-center justify-center bg-[#0a0f1a] p-6">
+        <div className="w-16 h-16 rounded-full border-2 border-white/10 flex items-center justify-center relative">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 border-t-2 border-amber-500 rounded-full"
+          />
+          <Brain size={24} className="text-amber-500" />
+        </div>
+        <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-6">Analyzing Patterns</p>
       </div>
     );
   }
@@ -198,7 +216,7 @@ export default function Predictions() {
           <div className="space-y-6">
             {diseases.map((disease, idx) => {
               const style = RISK_STYLES[disease.riskLevel as keyof typeof RISK_STYLES] || RISK_STYLES.low;
-              
+
               // Only show diseases that have at least one factor or tip to display based on the selection
               const hasItems = view === "factor" ? disease.contributingFactors.length > 0 : disease.recommendations.length > 0;
               if (!hasItems) return null;
@@ -212,14 +230,14 @@ export default function Predictions() {
                     </span>
                   </div>
                   <div className="space-y-1.5 pl-2">
-                    {view === "factor" ? 
+                    {view === "factor" ?
                       disease.contributingFactors.map((f: string, i: number) => (
                         <div key={i} className="flex items-start gap-2 text-xs text-white/60">
                           <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: style.color }} />
                           <span>{f}</span>
                         </div>
                       ))
-                    :
+                      :
                       disease.recommendations.map((r: string, i: number) => (
                         <div key={i} className="flex items-start gap-2 text-xs text-white/60">
                           <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 shrink-0" />

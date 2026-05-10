@@ -67,112 +67,60 @@ function projectFuture(currentScore: number) {
 }
 
 function DiseaseCard({ disease, index }: { disease: any; index: number }) {
-  const [expanded, setExpanded] = useState(false);
   const color = RISK_COLORS[disease.riskLevel] || "#22c55e";
-  const bg = RISK_BG[disease.riskLevel] || "rgba(34,197,94,0.08)";
+  const bg = disease.riskLevel === 'low' ? 'rgba(6, 78, 59, 0.4)' : (RISK_BG[disease.riskLevel] || "rgba(34,197,94,0.08)");
+  const borderColor = disease.riskLevel === 'low' ? '#10b98140' : `${color}30`;
+  const accentColor = disease.riskLevel === 'low' ? '#4ade80' : color;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="rounded-2xl border overflow-hidden"
-      style={{ borderColor: `${color}30`, background: bg }}
+      className="rounded-2xl border overflow-hidden p-4 flex items-center gap-4"
+      style={{ borderColor, background: bg }}
     >
-      <button
-        className="w-full flex items-center gap-3 p-4 text-left"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="relative w-14 h-14 shrink-0">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 56 56">
-            <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
-            <circle
-              cx="28" cy="28" r="24" fill="none"
-              stroke={color} strokeWidth="5"
-              strokeLinecap="round"
-              strokeDasharray={`${(disease.riskScore / 100) * 150.8} 150.8`}
-              style={{ filter: `drop-shadow(0 0 5px ${color}80)` }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-black" style={{ color }}>{disease.riskScore}%</span>
-          </div>
+      {/* Circular Progress */}
+      <div className="relative w-14 h-14 shrink-0">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
+          <circle
+            cx="28" cy="28" r="24" fill="none"
+            stroke={accentColor} strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray={`${(disease.riskScore / 100) * 150.8} 150.8`}
+            style={{ filter: `drop-shadow(0 0 5px ${accentColor}80)` }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-xs font-black" style={{ color: accentColor }}>{disease.riskScore}%</span>
         </div>
+      </div>
 
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-black text-white leading-tight">{disease.diseaseName.split("(")[0].trim()}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <span
-              className="text-[10px] font-black px-2 py-0.5 rounded-full capitalize"
-              style={{ background: `${color}20`, color }}
-            >
-              {disease.riskLevel}
-            </span>
-            <span className="text-[10px] text-white/35 font-medium">{disease.predictedTimeframe}</span>
-          </div>
-          <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${disease.riskScore}%` }}
-              transition={{ duration: 0.8, delay: index * 0.05 + 0.2, ease: "easeOut" }}
-              className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, ${color}60, ${color})` }}
-            />
-          </div>
-        </div>
-
-        <div className="shrink-0 text-white/30">
-          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </div>
-      </button>
-
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden"
+      {/* Info Section */}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-black text-white leading-tight">{disease.diseaseName.split("(")[0].trim()}</p>
+        <div className="flex items-center gap-2 mt-1">
+          <span
+            className="text-[10px] font-black px-2 py-0.5 rounded-full capitalize"
+            style={{ background: disease.riskLevel === 'low' ? '#064e3b' : `${color}20`, color: accentColor }}
           >
-            <div className="px-4 pb-4 space-y-3 border-t border-white/5 pt-3">
-              {disease.contributingFactors?.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <AlertTriangle size={12} style={{ color }} />
-                    <span className="text-[10px] font-black text-white/50 uppercase tracking-wider">Risk Factors</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {disease.contributingFactors.map((f: string, i: number) => (
-                      <div key={i} className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: color }} />
-                        <p className="text-xs text-white/50 font-medium leading-relaxed">{f}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            {disease.riskLevel}
+          </span>
+          <span className="text-[10px] text-white/35 font-medium">{disease.predictedTimeframe}</span>
+        </div>
 
-              {disease.recommendations?.length > 0 && (
-                <div className="rounded-xl p-3 border border-white/5" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Lightbulb size={12} className="text-amber-400" />
-                    <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider">How to Lower Your Risk</span>
-                  </div>
-                  <div className="space-y-2">
-                    {disease.recommendations.map((r: string, i: number) => (
-                      <div key={i} className="flex items-start gap-2">
-                        <CheckCircle2 size={12} className="text-green-400 mt-0.5 shrink-0" />
-                        <p className="text-xs text-white/60 font-medium leading-relaxed">{r}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Horizontal Progress bar */}
+        <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${disease.riskScore}%` }}
+            transition={{ duration: 0.8, delay: index * 0.05 + 0.2, ease: "easeOut" }}
+            className="h-full rounded-full"
+            style={{ background: `linear-gradient(90deg, ${accentColor}60, ${accentColor})` }}
+          />
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -352,7 +300,7 @@ export default function Statistics() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={forecastData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="label" axisLine={false} tickLine={false} 
+                <XAxis dataKey="label" axisLine={false} tickLine={false}
                   tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 9, fontWeight: "bold" }} />
                 <YAxis domain={[0, 100]} axisLine={false} tickLine={false}
                   tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 9 }} />
@@ -380,7 +328,7 @@ export default function Statistics() {
         <div className="space-y-3">
           <div className="flex items-center gap-2 mb-1 px-1">
             <Activity size={14} className="text-purple-400" />
-            <p className="text-sm font-black text-white">Full Disease Risk Analysis</p>
+            <p className="text-sm font-black text-white">Personalized Health Predictions</p>
           </div>
           {diseases.length > 0 ? (
             <div className="space-y-3">

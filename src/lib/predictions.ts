@@ -217,9 +217,55 @@ export function analyzePredictions(
     diseases.push({ diseaseName: "Respiratory / Lung Disease", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
   }
 
+  // Metabolic Syndrome
+  {
+    let score = 0;
+    const factors: string[] = [];
+    const recs: string[] = [];
+    if (bmi > 25) { score += 20; factors.push("Elevated BMI"); }
+    if (avgExercise < 30) { score += 20; factors.push("Sedentary lifestyle"); }
+    if (avgSleep < 7) { score += 15; factors.push("Inadequate sleep affects metabolism"); }
+    if (avgStress > 6) { score += 10; factors.push("Chronic stress affects metabolic health"); }
+    score = Math.min(score, 95);
+    recs.push("Target 150 mins of moderate intensity exercise weekly");
+    recs.push("Focus on whole foods and reduce processed sugar");
+    diseases.push({ diseaseName: "Metabolic Syndrome", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
+  }
+
+  // Cognitive Decline / Dementia Risk
+  {
+    let score = 0;
+    const factors: string[] = [];
+    const recs: string[] = [];
+    if (avgSleep < 6) { score += 25; factors.push("Chronic sleep deprivation affects brain clearance"); }
+    if (avgStress > 7) { score += 15; factors.push("High cortisol affects hippocampal health"); }
+    if (avgMeditation < 5) { score += 10; factors.push("Lack of mindfulness/mental rest"); }
+    if (profile.age > 60) { score += 20; factors.push("Age-related risk"); }
+    score = Math.min(score, 95);
+    recs.push("Prioritize 7-8 hours of quality sleep for brain health");
+    recs.push("Engage in lifelong learning and social activities");
+    recs.push("Maintain cardiovascular health to support brain blood flow");
+    diseases.push({ diseaseName: "Cognitive Decline Risk", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
+  }
+
+  // Chronic Fatigue Syndrome
+  {
+    let score = 0;
+    const factors: string[] = [];
+    const recs: string[] = [];
+    if (poorSleepRatio > 0.6) { score += 30; factors.push("Consistently poor sleep quality"); }
+    if (avgStress > 8) { score += 25; factors.push("Burnout-level chronic stress"); }
+    if (avgExercise === 0) { score += 15; factors.push("Physical deconditioning"); }
+    score = Math.min(score, 95);
+    recs.push("Establish a strict 'wind-down' routine 1 hour before bed");
+    recs.push("Consider gradual, low-impact activity (like restorative yoga)");
+    recs.push("Check for underlying nutritional deficiencies with a professional");
+    diseases.push({ diseaseName: "Chronic Fatigue", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
+  }
+
   diseases.sort((a, b) => b.riskScore - a.riskScore);
   const avgRisk = diseases.length > 0 ? diseases.reduce((s, d) => s + d.riskScore, 0) / diseases.length : 0;
-  
+
   // If no data is provided at all, set health score to 0 as requested
   let overallHealthScore = 0;
   if (sleepLogs.length > 0 || habitLogs.length > 0) {

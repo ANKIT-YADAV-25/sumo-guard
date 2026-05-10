@@ -53,7 +53,7 @@ export default function Register() {
           <p className="text-white/50 text-lg mb-2">Account created successfully!</p>
           <p className="text-white/30 text-sm">Setting up your health profile...</p>
           <div className="mt-8 flex gap-1.5">
-            {[0,1,2].map(i => (
+            {[0, 1, 2].map(i => (
               <motion.div key={i} className="w-2 h-2 rounded-full bg-green-400"
                 animate={{ opacity: [0.3, 1, 0.3] }}
                 transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }} />

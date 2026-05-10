@@ -13,6 +13,8 @@ import HabitLogs from "@/pages/habits";
 import Predictions from "@/pages/predictions";
 import Profile from "@/pages/profile";
 import Statistics from "@/pages/statistics";
+import RiskAnalysis from "@/pages/risk-analysis";
+import AIPrediction from "@/pages/ai-prediction";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Onboarding from "@/pages/onboarding";
@@ -33,51 +35,42 @@ function ProtectedRouter() {
 
   return (
     <AnimatePresence mode="wait">
-      {loading ? (
-        <motion.div
-          key="splash"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <SplashScreen />
-        </motion.div>
-      ) : (
-        <motion.div
-          key="content"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="h-full w-full"
-        >
-          {!user ? (
+      <motion.div
+        key="content"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="h-full w-full"
+      >
+        {!user ? (
+          <Switch>
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+            <Route>
+              <Login />
+            </Route>
+          </Switch>
+        ) : !user.onboardingDone ? (
+          <Switch>
+            <Route path="/onboarding" component={Onboarding} />
+            <Route component={Onboarding} />
+          </Switch>
+        ) : (
+          <AppLayout>
             <Switch>
-              <Route path="/login" component={Login} />
-              <Route path="/register" component={Register} />
-              <Route>
-                <Login />
-              </Route>
+              <Route path="/" component={Dashboard} />
+              <Route path="/sleep" component={SleepLogs} />
+              <Route path="/habits" component={HabitLogs} />
+              <Route path="/predictions" component={Predictions} />
+              <Route path="/statistics" component={Statistics} />
+              <Route path="/risk-analysis" component={RiskAnalysis} />
+              <Route path="/ai-prediction" component={AIPrediction} />
+              <Route path="/profile" component={Profile} />
+              <Route component={NotFound} />
             </Switch>
-          ) : !user.onboardingDone ? (
-            <Switch>
-              <Route path="/onboarding" component={Onboarding} />
-              <Route component={Onboarding} />
-            </Switch>
-          ) : (
-            <AppLayout>
-              <Switch>
-                <Route path="/" component={Dashboard} />
-                <Route path="/sleep" component={SleepLogs} />
-                <Route path="/habits" component={HabitLogs} />
-                <Route path="/predictions" component={Predictions} />
-                <Route path="/statistics" component={Statistics} />
-                <Route path="/profile" component={Profile} />
-                <Route component={NotFound} />
-              </Switch>
-            </AppLayout>
-          )}
-        </motion.div>
-      )}
+          </AppLayout>
+        )}
+      </motion.div>
     </AnimatePresence>
   );
 }

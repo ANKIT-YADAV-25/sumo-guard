@@ -36,9 +36,8 @@ const QUALITY_COLORS: Record<string, string> = {
 
 const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
 
-function getFixed7Days() {
-  const today = new Date();
-  return Array.from({ length: 7 }, (_, i) => addDays(today, i - 3));
+function getWeekDays(centerDate: Date) {
+  return Array.from({ length: 7 }, (_, i) => addDays(centerDate, i - 3));
 }
 
 function DiseaseCard({ disease, index }: { disease: any; index: number }) {
@@ -161,7 +160,9 @@ function DiseaseCard({ disease, index }: { disease: any; index: number }) {
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const weekDays = getFixed7Days();
+  const [direction, setDirection] = useState(0);
+  
+  const weekDays = getWeekDays(parseISO(selectedDate + "T12:00:00"));
 
   const { data, isLoading } = useGetDashboard({ date: selectedDate });
   const { data: predictions, isLoading: predLoading } = useGetPredictions();
@@ -174,9 +175,10 @@ export default function Dashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 5 ? "Night Owl" : hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
-  function shiftWeek(dir: number) {
+  function shiftDate(dir: number) {
+    setDirection(dir);
     const d = parseISO(selectedDate + "T12:00:00");
-    setSelectedDate(format(addDays(d, dir * 7), "yyyy-MM-dd"));
+    setSelectedDate(format(addDays(d, dir), "yyyy-MM-dd"));
   }
 
   const isInitialLoading = (isLoading && !data) || (predLoading && !predictions);
@@ -263,22 +265,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Radar preview */}
-        {hasData && radarData.length > 0 && (
-          <div className="mt-4 h-[130px] -mx-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData}>
-                <PolarGrid stroke="rgba(255,255,255,0.06)" />
-                <PolarAngleAxis
-                  dataKey="subject"
-                  tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9, fontWeight: "bold" }}
-                />
-                <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                <Radar dataKey="score" stroke={scoreColor} fill={scoreColor} fillOpacity={0.15} strokeWidth={1.5} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
       </div>
 
       {/* Week day picker */}
@@ -288,30 +274,52 @@ export default function Dashboard() {
             {format(weekDays[0], "d, MMM")} – {format(weekDays[6], "d, MMM")}
           </p>
         </div>
-        <div className="grid grid-cols-7 gap-1">
-          {weekDays.map((d, i) => {
-            const dStr = format(d, "yyyy-MM-dd");
-            const isSelected = dStr === selectedDate;
-            const isToday = dStr === format(new Date(), "yyyy-MM-dd");
-            const isFuture = d > new Date();
-            return (
-              <button key={i} onClick={() => !isFuture && setSelectedDate(dStr)} disabled={isFuture}
-                className="flex flex-col items-center gap-1 py-2 rounded-xl transition-all duration-200 active:scale-95"
-                style={isSelected
-                  ? { background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: "0 0 15px rgba(245,158,11,0.35)" }
-                  : { background: "rgba(255,255,255,0.03)" }}>
-                <span className="text-[9px] font-bold uppercase"
-                  style={{ color: isSelected ? "rgba(15,23,42,0.7)" : "rgba(255,255,255,0.3)" }}>
-                  {DAY_LETTERS[d.getDay()]}
-                </span>
-                <span className="text-sm font-black"
-                  style={{ color: isSelected ? "#0f172a" : isFuture ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.85)" }}>
-                  {d.getDate()}
-                </span>
-                {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-amber-400" />}
-              </button>
-            );
-          })}
+        <div className="relative overflow-hidden h-20">
+          <AnimatePresence initial={false} mode="popLayout" custom={direction}>
+            <motion.div
+              key={selectedDate}
+              custom={direction}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(_, info) => {
+                const threshold = 50;
+                if (info.offset.x > threshold) {
+                  shiftDate(-1);
+                } else if (info.offset.x < -threshold) {
+                  shiftDate(1);
+                }
+              }}
+              initial={{ x: direction > 0 ? 100 : -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: direction > 0 ? -100 : 100, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="grid grid-cols-7 gap-1 cursor-grab active:cursor-grabbing"
+            >
+              {weekDays.map((d, i) => {
+                const dStr = format(d, "yyyy-MM-dd");
+                const isSelected = dStr === selectedDate;
+                const isToday = dStr === format(new Date(), "yyyy-MM-dd");
+                const isFuture = d > new Date();
+                return (
+                  <button key={i} onClick={() => !isFuture && setSelectedDate(dStr)} disabled={isFuture}
+                    className="flex flex-col items-center gap-1 py-2 rounded-xl transition-all duration-200 active:scale-95"
+                    style={isSelected
+                      ? { background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: "0 0 15px rgba(245,158,11,0.35)" }
+                      : { background: "rgba(255,255,255,0.03)" }}>
+                    <span className="text-[9px] font-bold uppercase"
+                      style={{ color: isSelected ? "rgba(15,23,42,0.7)" : "rgba(255,255,255,0.3)" }}>
+                      {DAY_LETTERS[d.getDay()]}
+                    </span>
+                    <span className="text-sm font-black"
+                      style={{ color: isSelected ? "#0f172a" : isFuture ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.85)" }}>
+                      {d.getDate()}
+                    </span>
+                    {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-amber-400" />}
+                  </button>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
@@ -380,31 +388,72 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* FULL Disease Analysis */}
+      {/* FULL Risk Analysis Summary Card */}
       {hasData && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-4 px-1">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-xl flex items-center justify-center"
                 style={{ background: "rgba(245,158,11,0.15)" }}>
-                <Target size={14} className="text-amber-400" />
+                <Shield size={14} className="text-amber-400" />
               </div>
-              <div>
-                <p className="text-sm font-black text-white">Full Risk Analysis</p>
-                <p className="text-[10px] text-white/30 font-medium">Tap a card to see causes + solutions</p>
-              </div>
+              <p className="text-sm font-black text-white">Full Risk Analysis</p>
             </div>
-            <Link href="/predictions">
-              <span className="text-[10px] font-black text-amber-400 border border-amber-500/20 px-2 py-1 rounded-lg"
-                style={{ background: "rgba(245,158,11,0.06)" }}>Charts →</span>
+            <Link href="/risk-analysis">
+              <span className="text-[10px] font-black text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full"
+                style={{ background: "rgba(245,158,11,0.06)" }}>Charts</span>
             </Link>
           </div>
 
-          <div className="space-y-2.5">
-            {diseases.map((d, i) => (
-              <DiseaseCard key={i} disease={d} index={i} />
-            ))}
-          </div>
+          <Link href="/risk-analysis">
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="rounded-3xl p-5 border relative overflow-hidden cursor-pointer"
+              style={{
+                background: "linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(10,15,30,0.95) 100%)",
+                borderColor: "rgba(245,158,11,0.2)",
+                boxShadow: "0 0 30px rgba(245,158,11,0.05)"
+              }}
+            >
+              <div className="absolute top-0 right-0 p-3 opacity-10">
+                <Shield size={80} style={{ color: scoreColor }} />
+              </div>
+
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="relative w-16 h-16 shrink-0">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="5" />
+                    <circle
+                      cx="32" cy="32" r="28" fill="none"
+                      stroke={scoreColor} strokeWidth="5"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(healthScore / 100) * 175.9} 175.9`}
+                      style={{ filter: `drop-shadow(0 0 5px ${scoreColor}80)` }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-black text-white">{healthScore}</span>
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-sm font-black text-white leading-tight mb-1">Overall Health Safety</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase"
+                      style={{ background: `${scoreColor}20`, color: scoreColor }}>
+                      {scoreLabel}
+                    </span>
+                    <span className="text-[10px] text-white/30 font-medium">Updated just now</span>
+                  </div>
+                </div>
+
+                <div className="w-8 h-8 rounded-full flex items-center justify-center border border-white/10 text-white/40">
+                  <ChevronRight size={14} />
+                </div>
+              </div>
+            </motion.div>
+          </Link>
         </div>
       )}
     </div>

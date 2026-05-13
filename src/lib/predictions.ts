@@ -92,175 +92,177 @@ export function analyzePredictions(
 
   const diseases: DiseaseRisk[] = [];
 
-  // Cardiovascular Disease
-  {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (avgSleep < 6) { score += 20; factors.push("Insufficient sleep (< 6 hours/night)"); }
-    if (avgSleep < 7) { score += 10; factors.push("Below recommended sleep duration"); }
-    if (avgExercise < 30) { score += 20; factors.push("Insufficient physical activity"); }
-    if (avgStress > 6) { score += 15; factors.push("High stress levels"); }
-    if (avgSmoking > 0) { score += 25; factors.push("Smoking habit detected"); }
-    if (avgAlcohol > 2) { score += 10; factors.push("High alcohol consumption"); }
-    if (bmi > 30) { score += 15; factors.push("BMI indicates obesity"); }
-    if (hasHypertensionHistory) { score += 15; factors.push("Family history of hypertension"); }
-    if (hasHeartHistory) { score += 20; factors.push("Family history of heart disease"); }
-    if (profile.age > 50) { score += 10; factors.push("Age-related risk increase"); }
-    score = Math.min(score, 95);
-    if (avgExercise < 150) recs.push("Aim for at least 150 minutes of moderate exercise per week");
-    if (avgSmoking > 0) recs.push("Quit smoking — it's the single biggest step to reduce heart risk");
-    if (avgStress > 5) recs.push("Practice stress reduction techniques like meditation or yoga");
-    recs.push("Maintain a diet low in saturated fats and high in vegetables");
-    recs.push("Monitor blood pressure regularly");
-    diseases.push({ diseaseName: "Cardiovascular Disease", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["No significant risk factors detected"], recommendations: recs });
-  }
+  if (!dataInsufficient) {
+    // Cardiovascular Disease
+    {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (avgSleep < 6) { score += 12; factors.push("Insufficient sleep (< 6 hours/night)"); }
+      if (avgSleep < 7) { score += 5; factors.push("Below recommended sleep duration"); }
+      if (avgExercise < 30) { score += 15; factors.push("Insufficient physical activity"); }
+      if (avgStress > 6) { score += 10; factors.push("High stress levels"); }
+      if (avgSmoking > 0) { score += 15; factors.push("Smoking habit detected"); }
+      if (avgAlcohol > 2) { score += 8; factors.push("High alcohol consumption"); }
+      if (bmi > 30) { score += 10; factors.push("BMI indicates obesity"); }
+      if (hasHypertensionHistory) { score += 12; factors.push("Family history of hypertension"); }
+      if (hasHeartHistory) { score += 15; factors.push("Family history of heart disease"); }
+      if (profile.age > 50) { score += 8; factors.push("Age-related risk increase"); }
+      score = Math.min(score, 90);
+      if (avgExercise < 150) recs.push("Aim for at least 150 minutes of moderate exercise per week");
+      if (avgSmoking > 0) recs.push("Quit smoking — it's the single biggest step to reduce heart risk");
+      if (avgStress > 5) recs.push("Practice stress reduction techniques like meditation or yoga");
+      recs.push("Maintain a diet low in saturated fats and high in vegetables");
+      recs.push("Monitor blood pressure regularly");
+      diseases.push({ diseaseName: "Cardiovascular Disease", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["No significant risk factors detected"], recommendations: recs });
+    }
 
-  // Type 2 Diabetes
-  {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (avgExercise < 30) { score += 20; factors.push("Low physical activity level"); }
-    if (bmi > 25) { score += 15; factors.push("Elevated BMI"); }
-    if (bmi > 30) { score += 10; factors.push("Obesity increases insulin resistance"); }
-    if (avgSleep < 7) { score += 15; factors.push("Sleep deprivation impairs glucose metabolism"); }
-    if (avgStress > 6) { score += 10; factors.push("Chronic stress elevates cortisol"); }
-    if (hasDiabetesHistory) { score += 25; factors.push("Family history of diabetes"); }
-    if (profile.age > 45) { score += 10; factors.push("Age over 45"); }
-    if (avgAlcohol > 3) { score += 10; factors.push("Heavy alcohol use affects blood sugar"); }
-    score = Math.min(score, 95);
-    recs.push("Reduce refined carbohydrate and sugar intake");
-    if (avgExercise < 30) recs.push("Add 30+ minutes of daily walking or exercise");
-    recs.push("Get regular blood glucose screenings");
-    if (bmi > 25) recs.push("Target a healthy weight through diet and exercise");
-    diseases.push({ diseaseName: "Type 2 Diabetes", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["No significant risk factors detected"], recommendations: recs });
-  }
+    // Type 2 Diabetes
+    {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (avgExercise < 30) { score += 15; factors.push("Low physical activity level"); }
+      if (bmi > 25) { score += 10; factors.push("Elevated BMI"); }
+      if (bmi > 30) { score += 8; factors.push("Obesity increases insulin resistance"); }
+      if (avgSleep < 7) { score += 10; factors.push("Sleep deprivation impairs glucose metabolism"); }
+      if (avgStress > 6) { score += 8; factors.push("Chronic stress elevates cortisol"); }
+      if (hasDiabetesHistory) { score += 15; factors.push("Family history of diabetes"); }
+      if (profile.age > 45) { score += 8; factors.push("Age over 45"); }
+      if (avgAlcohol > 3) { score += 8; factors.push("Heavy alcohol use affects blood sugar"); }
+      score = Math.min(score, 90);
+      recs.push("Reduce refined carbohydrate and sugar intake");
+      if (avgExercise < 30) recs.push("Add 30+ minutes of daily walking or exercise");
+      recs.push("Get regular blood glucose screenings");
+      if (bmi > 25) recs.push("Target a healthy weight through diet and exercise");
+      diseases.push({ diseaseName: "Type 2 Diabetes", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["No significant risk factors detected"], recommendations: recs });
+    }
 
-  // Sleep Disorders
-  {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (avgSleep < 6) { score += 30; factors.push("Consistently sleeping less than 6 hours"); }
-    else if (avgSleep < 7) { score += 15; factors.push("Below recommended 7-9 hours of sleep"); }
-    if (avgSleep > 9) { score += 15; factors.push("Excessive sleep may indicate underlying issues"); }
-    if (poorSleepRatio > 0.5) { score += 25; factors.push("Frequent poor or fair sleep quality reported"); }
-    if (avgStress > 6) { score += 15; factors.push("High stress disrupts sleep cycles"); }
-    if (avgScreenTime > 6) { score += 10; factors.push("Excessive screen time before bed"); }
-    if (avgAlcohol > 1) { score += 10; factors.push("Alcohol disrupts sleep architecture"); }
-    if (avgSmoking > 0) { score += 10; factors.push("Nicotine is a stimulant affecting sleep"); }
-    score = Math.min(score, 95);
-    recs.push("Maintain a consistent sleep schedule, even on weekends");
-    recs.push("Avoid screens at least 1 hour before bedtime");
-    if (avgStress > 5) recs.push("Try relaxation techniques before bed (breathing exercises, stretching)");
-    recs.push("Keep your bedroom cool, dark, and quiet");
-    diseases.push({ diseaseName: "Chronic Sleep Disorder / Insomnia", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["Good sleep patterns observed"], recommendations: recs });
-  }
+    // Sleep Disorders
+    {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (avgSleep < 6) { score += 18; factors.push("Consistently sleeping less than 6 hours"); }
+      else if (avgSleep < 7) { score += 10; factors.push("Below recommended 7-9 hours of sleep"); }
+      if (avgSleep > 9) { score += 10; factors.push("Excessive sleep may indicate underlying issues"); }
+      if (poorSleepRatio > 0.5) { score += 18; factors.push("Frequent poor or fair sleep quality reported"); }
+      if (avgStress > 6) { score += 10; factors.push("High stress disrupts sleep cycles"); }
+      if (avgScreenTime > 6) { score += 8; factors.push("Excessive screen time before bed"); }
+      if (avgAlcohol > 1) { score += 8; factors.push("Alcohol disrupts sleep architecture"); }
+      if (avgSmoking > 0) { score += 8; factors.push("Nicotine is a stimulant affecting sleep"); }
+      score = Math.min(score, 90);
+      recs.push("Maintain a consistent sleep schedule, even on weekends");
+      recs.push("Avoid screens at least 1 hour before bedtime");
+      if (avgStress > 5) recs.push("Try relaxation techniques before bed (breathing exercises, stretching)");
+      recs.push("Keep your bedroom cool, dark, and quiet");
+      diseases.push({ diseaseName: "Chronic Sleep Disorder / Insomnia", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["Good sleep patterns observed"], recommendations: recs });
+    }
 
-  // Mental Health Disorders
-  {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (avgStress > 7) { score += 25; factors.push("Chronically high stress levels"); }
-    else if (avgStress > 5) { score += 12; factors.push("Elevated stress levels"); }
-    if (avgSleep < 6) { score += 20; factors.push("Sleep deprivation increases anxiety and depression risk"); }
-    if (avgExercise < 20) { score += 15; factors.push("Low physical activity (exercise reduces mental health risk)"); }
-    if (avgMeditation === 0) { score += 10; factors.push("No mindfulness or meditation practice"); }
-    if (avgAlcohol > 2) { score += 15; factors.push("Alcohol use is linked to mood disorders"); }
-    if (avgScreenTime > 8) { score += 10; factors.push("Excessive screen time linked to anxiety"); }
-    if (poorSleepRatio > 0.4) { score += 10; factors.push("Poor sleep quality affects mood regulation"); }
-    score = Math.min(score, 95);
-    recs.push("Exercise regularly — even 20-30 minutes of walking helps significantly");
-    if (avgMeditation < 10) recs.push("Start a daily 10-minute mindfulness or meditation practice");
-    recs.push("Build and maintain social connections");
-    recs.push("Consider speaking with a mental health professional if stress persists");
-    diseases.push({ diseaseName: "Anxiety & Depression", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["Good mental health indicators observed"], recommendations: recs });
-  }
+    // Mental Health Disorders
+    {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (avgStress > 7) { score += 18; factors.push("Chronically high stress levels"); }
+      else if (avgStress > 5) { score += 10; factors.push("Elevated stress levels"); }
+      if (avgSleep < 6) { score += 15; factors.push("Sleep deprivation increases anxiety and depression risk"); }
+      if (avgExercise < 20) { score += 10; factors.push("Low physical activity (exercise reduces mental health risk)"); }
+      if (avgMeditation === 0) { score += 8; factors.push("No mindfulness or meditation practice"); }
+      if (avgAlcohol > 2) { score += 10; factors.push("Alcohol use is linked to mood disorders"); }
+      if (avgScreenTime > 8) { score += 8; factors.push("Excessive screen time linked to anxiety"); }
+      if (poorSleepRatio > 0.4) { score += 8; factors.push("Poor sleep quality affects mood regulation"); }
+      score = Math.min(score, 90);
+      recs.push("Exercise regularly — even 20-30 minutes of walking helps significantly");
+      if (avgMeditation < 10) recs.push("Start a daily 10-minute mindfulness or meditation practice");
+      recs.push("Build and maintain social connections");
+      recs.push("Consider speaking with a mental health professional if stress persists");
+      diseases.push({ diseaseName: "Anxiety & Depression", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["Good mental health indicators observed"], recommendations: recs });
+    }
 
-  // Hypertension
-  {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (avgStress > 6) { score += 20; factors.push("High stress elevates blood pressure"); }
-    if (avgSmoking > 0) { score += 20; factors.push("Smoking raises blood pressure"); }
-    if (avgAlcohol > 2) { score += 15; factors.push("Heavy alcohol use contributes to hypertension"); }
-    if (avgSleep < 6) { score += 15; factors.push("Poor sleep is linked to high blood pressure"); }
-    if (avgExercise < 30) { score += 10; factors.push("Insufficient exercise to maintain healthy blood pressure"); }
-    if (bmi > 25) { score += 10; factors.push("Overweight increases hypertension risk"); }
-    if (hasHypertensionHistory) { score += 20; factors.push("Family history of hypertension"); }
-    if (profile.age > 40) { score += 10; factors.push("Age-related blood pressure increase"); }
-    score = Math.min(score, 95);
-    recs.push("Reduce sodium intake in your diet");
-    recs.push("Exercise aerobically for at least 30 minutes most days");
-    if (avgSmoking > 0) recs.push("Quitting smoking rapidly reduces blood pressure");
-    recs.push("Monitor blood pressure at home regularly");
-    diseases.push({ diseaseName: "Hypertension (High Blood Pressure)", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["No significant risk factors detected"], recommendations: recs });
-  }
+    // Hypertension
+    {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (avgStress > 6) { score += 12; factors.push("High stress elevates blood pressure"); }
+      if (avgSmoking > 0) { score += 15; factors.push("Smoking raises blood pressure"); }
+      if (avgAlcohol > 2) { score += 10; factors.push("Heavy alcohol use contributes to hypertension"); }
+      if (avgSleep < 6) { score += 10; factors.push("Poor sleep is linked to high blood pressure"); }
+      if (avgExercise < 30) { score += 8; factors.push("Insufficient exercise to maintain healthy blood pressure"); }
+      if (bmi > 25) { score += 8; factors.push("Overweight increases hypertension risk"); }
+      if (hasHypertensionHistory) { score += 15; factors.push("Family history of hypertension"); }
+      if (profile.age > 40) { score += 8; factors.push("Age-related blood pressure increase"); }
+      score = Math.min(score, 90);
+      recs.push("Reduce sodium intake in your diet");
+      recs.push("Exercise aerobically for at least 30 minutes most days");
+      if (avgSmoking > 0) recs.push("Quitting smoking rapidly reduces blood pressure");
+      recs.push("Monitor blood pressure at home regularly");
+      diseases.push({ diseaseName: "Hypertension (High Blood Pressure)", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors.length > 0 ? factors : ["No significant risk factors detected"], recommendations: recs });
+    }
 
-  // Respiratory / Lung Disease
-  if (avgSmoking > 0 || profile.familyHistory.some(f => f.toLowerCase().includes("lung") || f.toLowerCase().includes("asthma") || f.toLowerCase().includes("copd"))) {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (avgSmoking > 5) { score += 40; factors.push("Heavy smoking habit (>5 cigarettes/day)"); }
-    else if (avgSmoking > 0) { score += 25; factors.push("Smoking habit detected"); }
-    if (avgExercise < 20) { score += 10; factors.push("Poor lung fitness from low activity"); }
-    if (profile.familyHistory.some(f => f.toLowerCase().includes("asthma"))) { score += 20; factors.push("Family history of asthma"); }
-    if (profile.familyHistory.some(f => f.toLowerCase().includes("copd") || f.toLowerCase().includes("lung"))) { score += 20; factors.push("Family history of COPD/lung disease"); }
-    score = Math.min(score, 95);
-    if (avgSmoking > 0) recs.push("Quitting smoking is the most impactful action you can take");
-    recs.push("Avoid secondhand smoke and air pollutants");
-    recs.push("Practice breathing exercises to improve lung capacity");
-    diseases.push({ diseaseName: "Respiratory / Lung Disease", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
-  }
+    // Respiratory / Lung Disease
+    if (avgSmoking > 0 || profile.familyHistory.some(f => f.toLowerCase().includes("lung") || f.toLowerCase().includes("asthma") || f.toLowerCase().includes("copd"))) {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (avgSmoking > 5) { score += 20; factors.push("Heavy smoking habit (>5 cigarettes/day)"); }
+      else if (avgSmoking > 0) { score += 12; factors.push("Smoking habit detected"); }
+      if (avgExercise < 20) { score += 8; factors.push("Poor lung fitness from low activity"); }
+      if (profile.familyHistory.some(f => f.toLowerCase().includes("asthma"))) { score += 15; factors.push("Family history of asthma"); }
+      if (profile.familyHistory.some(f => f.toLowerCase().includes("copd") || f.toLowerCase().includes("lung"))) { score += 15; factors.push("Family history of COPD/lung disease"); }
+      score = Math.min(score, 90);
+      if (avgSmoking > 0) recs.push("Quitting smoking is the most impactful action you can take");
+      recs.push("Avoid secondhand smoke and air pollutants");
+      recs.push("Practice breathing exercises to improve lung capacity");
+      diseases.push({ diseaseName: "Respiratory / Lung Disease", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
+    }
 
-  // Metabolic Syndrome
-  {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (bmi > 25) { score += 20; factors.push("Elevated BMI"); }
-    if (avgExercise < 30) { score += 20; factors.push("Sedentary lifestyle"); }
-    if (avgSleep < 7) { score += 15; factors.push("Inadequate sleep affects metabolism"); }
-    if (avgStress > 6) { score += 10; factors.push("Chronic stress affects metabolic health"); }
-    score = Math.min(score, 95);
-    recs.push("Target 150 mins of moderate intensity exercise weekly");
-    recs.push("Focus on whole foods and reduce processed sugar");
-    diseases.push({ diseaseName: "Metabolic Syndrome", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
-  }
+    // Metabolic Syndrome
+    {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (bmi > 25) { score += 12; factors.push("Elevated BMI"); }
+      if (avgExercise < 30) { score += 12; factors.push("Sedentary lifestyle"); }
+      if (avgSleep < 7) { score += 10; factors.push("Inadequate sleep affects metabolism"); }
+      if (avgStress > 6) { score += 8; factors.push("Chronic stress affects metabolic health"); }
+      score = Math.min(score, 90);
+      recs.push("Target 150 mins of moderate intensity exercise weekly");
+      recs.push("Focus on whole foods and reduce processed sugar");
+      diseases.push({ diseaseName: "Metabolic Syndrome", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
+    }
 
-  // Cognitive Decline / Dementia Risk
-  {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (avgSleep < 6) { score += 25; factors.push("Chronic sleep deprivation affects brain clearance"); }
-    if (avgStress > 7) { score += 15; factors.push("High cortisol affects hippocampal health"); }
-    if (avgMeditation < 5) { score += 10; factors.push("Lack of mindfulness/mental rest"); }
-    if (profile.age > 60) { score += 20; factors.push("Age-related risk"); }
-    score = Math.min(score, 95);
-    recs.push("Prioritize 7-8 hours of quality sleep for brain health");
-    recs.push("Engage in lifelong learning and social activities");
-    recs.push("Maintain cardiovascular health to support brain blood flow");
-    diseases.push({ diseaseName: "Cognitive Decline Risk", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
-  }
+    // Cognitive Decline / Dementia Risk
+    {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (avgSleep < 6) { score += 15; factors.push("Chronic sleep deprivation affects brain clearance"); }
+      if (avgStress > 7) { score += 10; factors.push("High cortisol affects hippocampal health"); }
+      if (avgMeditation < 5) { score += 8; factors.push("Lack of mindfulness/mental rest"); }
+      if (profile.age > 60) { score += 15; factors.push("Age-related risk"); }
+      score = Math.min(score, 90);
+      recs.push("Prioritize 7-8 hours of quality sleep for brain health");
+      recs.push("Engage in lifelong learning and social activities");
+      recs.push("Maintain cardiovascular health to support brain blood flow");
+      diseases.push({ diseaseName: "Cognitive Decline Risk", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
+    }
 
-  // Chronic Fatigue Syndrome
-  {
-    let score = 0;
-    const factors: string[] = [];
-    const recs: string[] = [];
-    if (poorSleepRatio > 0.6) { score += 30; factors.push("Consistently poor sleep quality"); }
-    if (avgStress > 8) { score += 25; factors.push("Burnout-level chronic stress"); }
-    if (avgExercise === 0) { score += 15; factors.push("Physical deconditioning"); }
-    score = Math.min(score, 95);
-    recs.push("Establish a strict 'wind-down' routine 1 hour before bed");
-    recs.push("Consider gradual, low-impact activity (like restorative yoga)");
-    recs.push("Check for underlying nutritional deficiencies with a professional");
-    diseases.push({ diseaseName: "Chronic Fatigue", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
+    // Chronic Fatigue Syndrome
+    {
+      let score = 0;
+      const factors: string[] = [];
+      const recs: string[] = [];
+      if (poorSleepRatio > 0.6) { score += 18; factors.push("Consistently poor sleep quality"); }
+      if (avgStress > 8) { score += 15; factors.push("Burnout-level chronic stress"); }
+      if (avgExercise === 0) { score += 10; factors.push("Physical deconditioning"); }
+      score = Math.min(score, 90);
+      recs.push("Establish a strict 'wind-down' routine 1 hour before bed");
+      recs.push("Consider gradual, low-impact activity (like restorative yoga)");
+      recs.push("Check for underlying nutritional deficiencies with a professional");
+      diseases.push({ diseaseName: "Chronic Fatigue", riskLevel: getRiskLevel(score), riskScore: score, predictedTimeframe: getTimeframe(score), contributingFactors: factors, recommendations: recs });
+    }
   }
 
   diseases.sort((a, b) => b.riskScore - a.riskScore);

@@ -181,23 +181,62 @@ export default function Dashboard() {
     setSelectedDate(format(addDays(d, dir), "yyyy-MM-dd"));
   }
 
-  const isInitialLoading = (isLoading && !data) || (predLoading && !predictions);
+  const isInitialLoading = isLoading || predLoading;
+  const hasDailyData = !!(todaySleep || todayHabit);
   const hasData = !isInitialLoading && ((data?.sleepLogsCount ?? 0) > 0 || (data?.habitLogsCount ?? 0) > 0);
-  const healthScore = predictions?.overallHealthScore ?? data?.healthScore ?? 0;
 
-  const scoreColor = isInitialLoading ? "rgba(255,255,255,0.1)" : !hasData ? "#94a3b8" : healthScore >= 70 ? "#22c55e" : healthScore >= 50 ? "#f59e0b" : "#ef4444";
-  const scoreLabel = isInitialLoading ? "Loading..." : !hasData ? "No Data Yet" : healthScore >= 70 ? "Good Shape" : healthScore >= 50 ? "Moderate Risk" : "High Risk";
+  // Calculate a Daily Score (max 100) based on today's inputs
+  let dailyScore = 0;
+  if (hasDailyData) {
+    let sleepScore = 0;
+    if (todaySleep) {
+      if (todaySleep.durationHours >= 7 && todaySleep.durationHours <= 9) sleepScore = 40;
+      else if (todaySleep.durationHours >= 6) sleepScore = 30;
+      else if (todaySleep.durationHours >= 5) sleepScore = 20;
+      else sleepScore = 10;
+      if (todaySleep.quality === "poor") sleepScore = Math.max(0, sleepScore - 10);
+      if (todaySleep.quality === "excellent") sleepScore = Math.min(40, sleepScore + 5);
+    }
+    
+    let exerciseScore = 0;
+    let waterScore = 0;
+    let stressScore = 20;
+    if (todayHabit) {
+      if (todayHabit.exerciseMinutes >= 30) exerciseScore = 20;
+      else if (todayHabit.exerciseMinutes >= 15) exerciseScore = 10;
+      else if (todayHabit.exerciseMinutes > 0) exerciseScore = 5;
+      
+      if (todayHabit.waterGlasses >= 8) waterScore = 20;
+      else if (todayHabit.waterGlasses >= 4) waterScore = 10;
+      
+      stressScore = Math.max(0, 20 - (todayHabit.stressLevel * 2));
+    }
+    
+    // If only one is logged, scale the score to make it fair (out of 100)
+    if (todaySleep && !todayHabit) {
+      dailyScore = Math.round((sleepScore / 40) * 100);
+    } else if (!todaySleep && todayHabit) {
+      dailyScore = Math.round(((exerciseScore + waterScore + stressScore) / 60) * 100);
+    } else {
+      dailyScore = sleepScore + exerciseScore + waterScore + stressScore;
+    }
+  }
+
+  const scoreColor = isInitialLoading ? "rgba(255,255,255,0.1)" : !hasDailyData ? "#94a3b8" : dailyScore >= 75 ? "#22c55e" : dailyScore >= 50 ? "#f59e0b" : "#ef4444";
+  const scoreLabel = isInitialLoading ? "Loading..." : !hasDailyData ? "No Data Today" : dailyScore >= 75 ? "Great Day!" : dailyScore >= 50 ? "Moderate Day" : "Needs Attention";
   const scoreSummary = isInitialLoading
-    ? "Calculating your health insights..."
-    : !hasData
-      ? "Log your daily activities to start seeing your health risk analysis and score."
-      : (predictions?.summary?.slice(0, 80) + ((predictions?.summary?.length ?? 0) > 80 ? "…" : ""));
+    ? "Loading your daily insights..."
+    : !hasDailyData
+      ? "Log today's sleep and habits to generate your daily dashboard."
+      : `Your score based on ${todaySleep ? "sleep" : ""}${todaySleep && todayHabit ? " and " : ""}${todayHabit ? "habits" : ""} for this day.`;
 
-  // Radar data for top 5 diseases
+  // Radar data for top 5 diseases (keep overall for the bottom card)
   const radarData = diseases.slice(0, 5).map(d => ({
     subject: d.diseaseName.split(" ")[0].replace("(", ""),
     score: d.riskScore,
   }));
+
+  const healthScore = predictions?.overallHealthScore ?? data?.healthScore ?? 0;
 
   return (
     <div className="space-y-4 pb-2">
@@ -235,12 +274,12 @@ export default function Dashboard() {
                 cx="56" cy="56" r="48" fill="none"
                 stroke={scoreColor} strokeWidth="8"
                 strokeLinecap="round"
-                strokeDasharray={`${(healthScore / 100) * 301.6} 301.6`}
+                strokeDasharray={`${(dailyScore / 100) * 301.6} 301.6`}
                 style={{ filter: `drop-shadow(0 0 8px ${scoreColor}80)`, transition: "stroke-dasharray 1s ease" }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-black text-white leading-none">{healthScore}</span>
+              <span className="text-3xl font-black text-white leading-none">{dailyScore}</span>
               <span className="text-[10px] text-white/40 font-bold">/100</span>
             </div>
           </div>
@@ -253,8 +292,8 @@ export default function Dashboard() {
             {/* Quick pills */}
             <div className="flex gap-2 mt-3">
               {[
-                { label: `${data?.avgSleepHours ?? 0}h sleep`, color: "#6366f1" },
-                { label: `${data?.avgExerciseMinutes ?? 0}m exercise`, color: "#22c55e" },
+                { label: `${todaySleep?.durationHours ?? 0}h sleep`, color: "#6366f1" },
+                { label: `${todayHabit?.exerciseMinutes ?? 0}m exercise`, color: "#22c55e" },
               ].map((p) => (
                 <span key={p.label} className="text-[10px] font-black px-2.5 py-1 rounded-full border"
                   style={{ background: `${p.color}12`, borderColor: `${p.color}30`, color: p.color }}>
@@ -299,7 +338,7 @@ export default function Dashboard() {
                 const dStr = format(d, "yyyy-MM-dd");
                 const isSelected = dStr === selectedDate;
                 const isToday = dStr === format(new Date(), "yyyy-MM-dd");
-                const isFuture = d > new Date();
+                const isFuture = dStr > format(new Date(), "yyyy-MM-dd");
                 return (
                   <button key={i} onClick={() => !isFuture && setSelectedDate(dStr)} disabled={isFuture}
                     className="flex flex-col items-center gap-1 py-2 rounded-xl transition-all duration-200 active:scale-95"

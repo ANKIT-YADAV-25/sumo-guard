@@ -139,7 +139,8 @@ export default function Statistics() {
   const diseases = predictions?.diseases ?? [];
   const healthScore = predictions?.overallHealthScore ?? 0;
 
-  const hasData = (stats?.habitLogsCount ?? 0) > 0 || !predictions?.dataInsufficient;
+  const hasOverallData = !predictions?.dataInsufficient;
+  const hasPeriodData = (stats?.habitLogsCount ?? 0) > 0;
 
   // Build future disease projection chart data
   const projectionData = diseases.slice(0, 5).map((d) => {
@@ -224,7 +225,7 @@ export default function Statistics() {
       </div>
 
       {/* Stat summary cards */}
-      {avgs && (
+      {avgs && hasPeriodData ? (
         <div className="grid grid-cols-3 gap-2">
           {[
             { icon: <Zap size={14} />, label: "Avg Exercise", value: `${avgs.avgExerciseMinutes}m`, color: "#22c55e" },
@@ -239,10 +240,14 @@ export default function Statistics() {
             </div>
           ))}
         </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-white/10 p-5 text-center" style={{ background: "rgba(15,23,42,0.3)" }}>
+          <p className="text-white/40 font-bold text-sm">No log data for this {period}</p>
+        </div>
       )}
 
       {/* ── FUTURE DISEASE RISK ── */}
-      {hasData && (
+      {hasOverallData && (
         <div className="rounded-2xl border border-white/8 p-4" style={{ background: "rgba(15,23,42,0.7)" }}>
           <div className="flex items-center gap-2 mb-1">
             <Target size={14} className="text-amber-400" />
@@ -289,7 +294,7 @@ export default function Statistics() {
       )}
 
       {/* Health Score Projection Timeline */}
-      {hasData && (
+      {hasOverallData && (
         <div className="rounded-2xl border border-white/8 p-4" style={{ background: "rgba(15,23,42,0.7)" }}>
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp size={14} className="text-green-400" />
@@ -324,7 +329,7 @@ export default function Statistics() {
 
 
       {/* Disease Analysis List */}
-      {hasData && (
+      {hasOverallData && (
         <div className="space-y-3">
           <div className="flex items-center gap-2 mb-1 px-1">
             <Activity size={14} className="text-purple-400" />

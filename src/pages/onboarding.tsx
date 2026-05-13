@@ -75,8 +75,8 @@ export default function Onboarding() {
     isAlcoholic: false,
     hasChronicCondition: false,
     chronicConditions: [] as string[],
-    activityLevel: "moderate",
-    dietType: "standard",
+    activityLevel: "",
+    dietType: "",
   });
 
   const [conditionInput, setConditionInput] = useState("");
@@ -240,17 +240,17 @@ export default function Onboarding() {
           </div>
         )}
         {isLast ? (
-          <button onClick={handleFinish} disabled={loading}
-            className="w-full py-4 rounded-2xl font-black text-slate-900 text-base flex items-center justify-center gap-2"
-            style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: "0 0 25px rgba(245,158,11,0.4)" }}>
+          <button onClick={handleFinish} disabled={loading || (step === 2 && !form.dietType)}
+            className="w-full py-4 rounded-2xl font-black text-slate-900 text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale transition-all"
+            style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: !loading && (step !== 2 || form.dietType) ? "0 0 25px rgba(245,158,11,0.4)" : "none" }}>
             {loading
               ? <div className="w-5 h-5 rounded-full border-2 border-slate-900 border-t-transparent animate-spin" />
               : <><span>Start Tracking Health</span><ArrowRight size={18} /></>}
           </button>
         ) : (
-          <button onClick={() => setStep(s => s + 1)}
-            className="w-full py-4 rounded-2xl font-black text-slate-900 text-base flex items-center justify-center gap-2"
-            style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: "0 0 25px rgba(245,158,11,0.4)" }}>
+          <button onClick={() => setStep(s => s + 1)} disabled={step === 1 && !form.activityLevel}
+            className="w-full py-4 rounded-2xl font-black text-slate-900 text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale transition-all"
+            style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: (step !== 1 || form.activityLevel) ? "0 0 25px rgba(245,158,11,0.4)" : "none" }}>
             <span>Continue</span><ArrowRight size={18} />
           </button>
         )}

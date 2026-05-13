@@ -41,12 +41,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 async function buildAuthUser(firebaseUser: FirebaseUser): Promise<AuthUser> {
-  const userDoc = await getUserDoc(firebaseUser.uid);
+  const [userDoc, healthDetails] = await Promise.all([
+    getUserDoc(firebaseUser.uid),
+    getHealthDetails(firebaseUser.uid)
+  ]);
+
   return {
     id: firebaseUser.uid,
     name: userDoc?.name || firebaseUser.displayName || "User",
     email: firebaseUser.email || "",
-    lifestyle: (await getHealthDetails(firebaseUser.uid) as Lifestyle) || {},
+    lifestyle: (healthDetails as Lifestyle) || {},
     onboardingDone: userDoc?.onboardingDone ?? false,
     createdAt: userDoc?.createdAt || firebaseUser.metadata.creationTime || new Date().toISOString(),
   };
@@ -54,12 +58,16 @@ async function buildAuthUser(firebaseUser: FirebaseUser): Promise<AuthUser> {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    // If the user was previously logged in, start with loading=true to show splash immediately
+    return !!localStorage.getItem("sumoguard_was_logged_in");
+  });
   const skipNextAuthChange = React.useRef(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        localStorage.setItem("sumoguard_was_logged_in", "true");
         // Skip if we're in the middle of registration (the register function will set the user)
         if (skipNextAuthChange.current) {
           skipNextAuthChange.current = false;
@@ -81,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
       } else {
+        localStorage.removeItem("sumoguard_was_logged_in");
         setUser(null);
       }
       setLoading(false);
@@ -96,7 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function login(email: string, password: string) {
+    skipNextAuthChange.current = true;
     const cred = await signInWithEmailAndPassword(auth, email, password);
+    localStorage.setItem("sumoguard_was_logged_in", "true");
     const authUser = await buildAuthUser(cred.user);
     setUser(authUser);
   }
@@ -127,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     await signOut(auth);
+    localStorage.removeItem("sumoguard_was_logged_in");
     setUser(null);
   }
 
@@ -141,8 +153,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       activityLevel: (onboardingData.activityLevel as string) ?? "",
       dietType: (onboardingData.dietType as string) ?? "",
     };
-    await setHealthDetails(auth.currentUser.uid, lifestyle as unknown as Record<string, unknown>);
-    await setUserDoc(auth.currentUser.uid, { onboardingDone: true });
+    await Promise.all([
+      setHealthDetails(auth.currentUser.uid, lifestyle as unknown as Record<string, unknown>),
+      setUserDoc(auth.currentUser.uid, { onboardingDone: true })
+    ]);
     setUser((prev) =>
       prev ? { ...prev, lifestyle, onboardingDone: true } : prev
     );

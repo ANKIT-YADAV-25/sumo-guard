@@ -33,6 +33,10 @@ function ProtectedRouter() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
+  if (loading) {
+    return <SplashScreen />;
+  }
+
   return (
     <AnimatePresence mode="wait">
       <motion.div

@@ -97,8 +97,10 @@ export function useGetDashboard(params: { date: string }) {
   return useQuery({
     queryKey: ["/api/dashboard", user?.id, params.date],
     queryFn: async () => {
-      const sleeps = await getSleepLogs(user!.id);
-      const habits = await getHabitLogs(user!.id);
+      const [sleeps, habits] = await Promise.all([
+        getSleepLogs(user!.id),
+        getHabitLogs(user!.id)
+      ]);
       const selectedDateSleep = sleeps.find(s => s.date === params.date) || null;
       const selectedDateHabit = habits.find(h => h.date === params.date) || null;
       
@@ -124,9 +126,11 @@ export function useGetPredictions() {
   return useQuery({
     queryKey: ["/api/predictions", user?.id],
     queryFn: async () => {
-      const sleeps = await getSleepLogs(user!.id);
-      const habits = await getHabitLogs(user!.id);
-      const p = await getProfile(user!.id);
+      const [sleeps, habits, p] = await Promise.all([
+        getSleepLogs(user!.id),
+        getHabitLogs(user!.id),
+        getProfile(user!.id)
+      ]);
       const defaults = { 
         name: user!.name, age: 0, gender: "", weight: 0, height: 0, 
         existingConditions: [], familyHistory: [], 

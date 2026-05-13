@@ -63,7 +63,7 @@ export function analyzePredictions(
     familyHistory: string[];
   }
 ): { overallHealthScore: number; diseases: DiseaseRisk[]; summary: string; dataInsufficient: boolean } {
-  const dataInsufficient = sleepLogs.length < 3 && habitLogs.length < 3;
+  const dataInsufficient = sleepLogs.length < 2 || habitLogs.length < 2;
 
   const avgSleep = sleepLogs.length > 0
     ? sleepLogs.reduce((s, l) => s + l.durationHours, 0) / sleepLogs.length : 7;

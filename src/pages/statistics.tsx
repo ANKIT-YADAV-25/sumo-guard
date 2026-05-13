@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PremiumCard, PageHeader } from "@/components/shared";
-import { X } from "lucide-react";
+import { X, Link } from "lucide-react";
+import { useLocation, Link as WouterLink } from "wouter";
 import {
   Select,
   SelectContent,
@@ -122,6 +123,14 @@ function DiseaseCard({ disease, index }: { disease: any; index: number }) {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function InsufficientDataBox({ message = "Insufficient data for statistics" }: { message?: string }) {
+  return (
+    <div className="rounded-2xl py-12 border border-dashed border-white/10 bg-slate-900/20 flex items-center justify-center">
+      <p className="text-white/40 font-bold text-sm tracking-tight">{message}</p>
+    </div>
   );
 }
 
@@ -246,109 +255,115 @@ export default function Statistics() {
         </div>
       )}
 
-      {/* ── FUTURE DISEASE RISK ── */}
-      {hasOverallData && (
-        <div className="rounded-2xl border border-white/8 p-4" style={{ background: "rgba(15,23,42,0.7)" }}>
-          <div className="flex items-center gap-2 mb-1">
-            <Target size={14} className="text-amber-400" />
-            <p className="text-sm font-black text-white">Future Disease Risk</p>
-          </div>
-          <p className="text-xs text-white/30 font-medium mb-4">Current vs Worst Case risk probability</p>
-
-          {predLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="w-8 h-8 rounded-full border-4 border-amber-500 border-t-transparent animate-spin" />
+      {/* ── ALL CONTENT BELOW ONLY SHOWN AFTER DATA IS LOGGED ── */}
+      {hasPeriodData && (
+        <div className="space-y-4">
+          {/* ── FUTURE DISEASE RISK ── */}
+          <div className="rounded-2xl border border-white/8 p-4" style={{ background: "rgba(15,23,42,0.7)" }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Target size={14} className="text-amber-400" />
+              <p className="text-sm font-black text-white">Future Disease Risk</p>
             </div>
-          ) : projectionData.length > 0 ? (
-            <>
-              <div className="h-[200px] -mx-2">
+            <p className="text-xs text-white/30 font-medium mb-4">Current vs Worst Case risk probability</p>
+
+            {predLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-8 h-8 rounded-full border-4 border-amber-500 border-t-transparent animate-spin" />
+              </div>
+            ) : !hasOverallData ? (
+              <InsufficientDataBox />
+            ) : projectionData.length > 0 ? (
+              <>
+                <div className="h-[200px] -mx-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={projectionData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false}
+                        tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9, fontWeight: "bold" }} />
+                      <YAxis domain={[0, 100]} axisLine={false} tickLine={false}
+                        tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 9 }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="current" name="Current" fill="#6366f1" radius={[3, 3, 0, 0]} maxBarSize={15} unit="%" />
+                      <Bar dataKey="worst" name="Worst Case" fill="#ef4444" radius={[3, 3, 0, 0]} maxBarSize={15} unit="%" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                {/* Legend */}
+                <div className="flex flex-wrap gap-4 mt-2">
+                  {[
+                    { color: "#6366f1", label: "Current Level" },
+                    { color: "#ef4444", label: "Worst Case (Unhealthy Habits)" },
+                  ].map((l) => (
+                    <span key={l.label} className="flex items-center gap-1.5 text-[10px] font-black text-white/40">
+                      <span className="w-2.5 h-2.5 rounded-sm" style={{ background: l.color }} />{l.label}
+                    </span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="py-8 text-center text-white/30 text-xs font-bold">Log data to generate predictions</div>
+            )}
+          </div>
+
+          {/* ── HEALTH SCORE FORECAST ── */}
+          <div className="rounded-2xl border border-white/8 p-4" style={{ background: "rgba(15,23,42,0.7)" }}>
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp size={14} className="text-green-400" />
+              <p className="text-sm font-black text-white">Health Score Forecast</p>
+            </div>
+            <p className="text-xs text-white/30 font-medium mb-4">Projected over 12 months — green if improved, red if unchanged</p>
+            
+            {!hasOverallData ? (
+              <InsufficientDataBox />
+            ) : (
+              <div className="h-[150px] -mx-2">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectionData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                  <LineChart data={forecastData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false}
-                      tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9, fontWeight: "bold" }} />
+                    <XAxis dataKey="label" axisLine={false} tickLine={false}
+                      tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 9, fontWeight: "bold" }} />
                     <YAxis domain={[0, 100]} axisLine={false} tickLine={false}
                       tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 9 }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="current" name="Current" fill="#6366f1" radius={[3, 3, 0, 0]} maxBarSize={15} unit="%" />
-                    <Bar dataKey="worst" name="Worst Case" fill="#ef4444" radius={[3, 3, 0, 0]} maxBarSize={15} unit="%" />
-                  </BarChart>
+                    <Line
+                      type="monotone" dataKey="improve" name="With Improvements"
+                      stroke="#22c55e" strokeWidth={2.5} dot={{ r: 4, fill: "#22c55e", stroke: "#0f172a", strokeWidth: 2 }}
+                      unit="/100"
+                    />
+                    <Line
+                      type="monotone" dataKey="decline" name="No Changes"
+                      stroke="#ef4444" strokeWidth={2} strokeDasharray="5 3"
+                      dot={{ r: 3, fill: "#ef4444", stroke: "#0f172a", strokeWidth: 1.5 }} unit="/100"
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
-              {/* Legend */}
-              <div className="flex flex-wrap gap-4 mt-2">
-                {[
-                  { color: "#6366f1", label: "Current Level" },
-                  { color: "#ef4444", label: "Worst Case (Unhealthy Habits)" },
-                ].map((l) => (
-                  <span key={l.label} className="flex items-center gap-1.5 text-[10px] font-black text-white/40">
-                    <span className="w-2.5 h-2.5 rounded-sm" style={{ background: l.color }} />{l.label}
-                  </span>
+            )}
+          </div>
+
+          {/* ── PERSONALIZED PREDICTIONS ── */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-1 px-1">
+              <Activity size={14} className="text-purple-400" />
+              <p className="text-sm font-black text-white">Personalized Health Predictions</p>
+            </div>
+            
+            {!hasOverallData ? (
+              <InsufficientDataBox />
+            ) : diseases.length > 0 ? (
+              <div className="space-y-3">
+                {diseases.map((d, i) => (
+                  <DiseaseCard key={i} disease={d} index={i} />
                 ))}
               </div>
-            </>
-          ) : (
-            <div className="py-8 text-center text-white/30 text-xs font-bold">Log data to generate predictions</div>
-          )}
-        </div>
-      )}
-
-      {/* Health Score Projection Timeline */}
-      {hasOverallData && (
-        <div className="rounded-2xl border border-white/8 p-4" style={{ background: "rgba(15,23,42,0.7)" }}>
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp size={14} className="text-green-400" />
-            <p className="text-sm font-black text-white">Health Score Forecast</p>
-          </div>
-          <p className="text-xs text-white/30 font-medium mb-4">Projected over 12 months — green if improved, red if unchanged</p>
-          <div className="h-[150px] -mx-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={forecastData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="label" axisLine={false} tickLine={false}
-                  tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 9, fontWeight: "bold" }} />
-                <YAxis domain={[0, 100]} axisLine={false} tickLine={false}
-                  tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 9 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Line
-                  type="monotone" dataKey="improve" name="With Improvements"
-                  stroke="#22c55e" strokeWidth={2.5} dot={{ r: 4, fill: "#22c55e", stroke: "#0f172a", strokeWidth: 2 }}
-                  unit="/100"
-                />
-                <Line
-                  type="monotone" dataKey="decline" name="No Changes"
-                  stroke="#ef4444" strokeWidth={2} strokeDasharray="5 3"
-                  dot={{ r: 3, fill: "#ef4444", stroke: "#0f172a", strokeWidth: 1.5 }} unit="/100"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-white/10 p-5 text-center" style={{ background: "rgba(15,23,42,0.3)" }}>
+                <p className="text-white/40 font-bold text-sm">No predictions available yet</p>
+              </div>
+            )}
           </div>
         </div>
       )}
-
-
-
-      {/* Disease Analysis List */}
-      {hasOverallData && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 mb-1 px-1">
-            <Activity size={14} className="text-purple-400" />
-            <p className="text-sm font-black text-white">Personalized Health Predictions</p>
-          </div>
-          {diseases.length > 0 ? (
-            <div className="space-y-3">
-              {diseases.map((d, i) => (
-                <DiseaseCard key={i} disease={d} index={i} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-white/10 p-5 text-center" style={{ background: "rgba(15,23,42,0.3)" }}>
-              <p className="text-white/40 font-bold text-sm">No predictions available yet</p>
-            </div>
-          )}
-        </div>
-      )}
-
     </div>
   );
 }

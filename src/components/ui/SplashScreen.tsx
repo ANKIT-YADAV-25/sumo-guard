@@ -70,7 +70,7 @@ export const SplashScreen = () => {
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
             className="text-4xl font-black text-white tracking-tighter mb-2"
           >
             SUMO <span className="text-amber-500">GUARD</span>
@@ -79,7 +79,7 @@ export const SplashScreen = () => {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.2, duration: 0.8 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
             className="text-white/40 text-sm font-bold uppercase tracking-[0.4em]"
           >
             Fortifying Your Future
@@ -92,7 +92,7 @@ export const SplashScreen = () => {
         <motion.div
           initial={{ x: "-100%" }}
           animate={{ x: "0%" }}
-          transition={{ duration: 2.5, ease: "easeInOut" }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
           className="h-full w-full bg-gradient-to-r from-amber-500 to-orange-600"
         />
       </div>
@@ -100,7 +100,7 @@ export const SplashScreen = () => {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
+        transition={{ delay: 0.8 }}
         className="absolute bottom-10 text-[10px] text-white/20 font-bold uppercase tracking-widest"
       >
         Initializing Security Protocols...

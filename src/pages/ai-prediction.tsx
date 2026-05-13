@@ -156,7 +156,11 @@ export default function AIPrediction() {
 
       {/* Disease List */}
       <div className="space-y-6">
-        {view === null ? (
+        {predictions?.dataInsufficient ? (
+          <div className="rounded-3xl py-12 border border-dashed border-white/10 bg-slate-900/20 flex items-center justify-center mt-4">
+            <p className="text-white/40 font-bold text-sm tracking-tight">Insufficient data for AI predictions</p>
+          </div>
+        ) : view === null ? (
           <>
             <div className="flex items-center gap-2 px-1 mb-3">
               <Brain size={14} className="text-amber-400" />
@@ -178,7 +182,7 @@ export default function AIPrediction() {
                 </h3>
               </div>
             </div>
-            
+
             <div className="space-y-8">
               {diseases.slice(0, 7).map((disease, idx) => {
                 const style = RISK_STYLES[disease.riskLevel as keyof typeof RISK_STYLES] || RISK_STYLES.low;
@@ -190,7 +194,7 @@ export default function AIPrediction() {
                         {disease.riskLevel}
                       </span>
                     </div>
-                    
+
                     <div className="space-y-2.5">
                       {view === "tip" ? (
                         disease.recommendations.map((rec: string, i: number) => (
@@ -215,8 +219,6 @@ export default function AIPrediction() {
           </div>
         )}
       </div>
-
-
     </div>
   );
 }

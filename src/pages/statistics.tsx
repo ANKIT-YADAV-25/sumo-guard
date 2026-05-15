@@ -77,7 +77,6 @@ function DiseaseCard({ disease, index }: { disease: any; index: number }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
       className="rounded-2xl border overflow-hidden p-4 flex items-center gap-4"
       style={{ borderColor, background: bg }}
     >
@@ -116,7 +115,7 @@ function DiseaseCard({ disease, index }: { disease: any; index: number }) {
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${disease.riskScore}%` }}
-            transition={{ duration: 0.8, delay: index * 0.05 + 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="h-full rounded-full"
             style={{ background: `linear-gradient(90deg, ${accentColor}60, ${accentColor})` }}
           />

@@ -248,9 +248,9 @@ export default function Onboarding() {
               : <><span>Start Tracking Health</span><ArrowRight size={18} /></>}
           </button>
         ) : (
-          <button onClick={() => setStep(s => s + 1)} disabled={step === 1 && !form.activityLevel}
+          <button onClick={() => setStep(s => s + 1)} disabled={(step === 0 && !(form.isSmoker || form.isDrinker || form.isAlcoholic || form.hasChronicCondition)) || (step === 1 && !form.activityLevel)}
             className="w-full py-4 rounded-2xl font-black text-slate-900 text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale transition-all"
-            style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: (step !== 1 || form.activityLevel) ? "0 0 25px rgba(245,158,11,0.4)" : "none" }}>
+            style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)", boxShadow: ((step === 0 && (form.isSmoker || form.isDrinker || form.isAlcoholic || form.hasChronicCondition)) || (step === 1 && form.activityLevel)) ? "0 0 25px rgba(245,158,11,0.4)" : "none" }}>
             <span>Continue</span><ArrowRight size={18} />
           </button>
         )}

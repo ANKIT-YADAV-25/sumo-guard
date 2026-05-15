@@ -21,13 +21,18 @@ export default function Register() {
     setError("");
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
     setLoading(true);
+
     try {
       const user = await register(name, email, password);
       setUserName(user.name);
       setSuccess(true);
       setTimeout(() => setLocation("/onboarding"), 2500);
     } catch (err: any) {
-      setError(err.message || "Registration failed");
+      if (err.code === "auth/email-already-in-use") {
+        setError("This User Name is already taken. Please try another.");
+      } else {
+        setError(err.message || "Registration failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -101,7 +106,7 @@ export default function Register() {
 
           {/* Email */}
           <div>
-            <label className="text-xs text-white/50 font-bold uppercase tracking-wider mb-2 block">Email</label>
+            <label className="text-xs text-white/50 font-bold uppercase tracking-wider mb-2 block">Email ID</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}

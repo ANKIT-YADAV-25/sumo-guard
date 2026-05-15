@@ -6,7 +6,7 @@ import { Eye, EyeOff, Shield, User, Lock, ArrowRight } from "lucide-react";
 export default function Login() {
   const { login } = useAuth();
   const [, setLocation] = useLocation();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(""); // used for either username or email
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
@@ -16,11 +16,18 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    // If it doesn't look like an email (no @), treat as username and append our suffix
+    let loginId = email.trim();
+    if (!loginId.includes("@")) {
+      loginId = loginId.toLowerCase().replace(/\s+/g, ".") + "@sumoguard.io";
+    }
+
     try {
-      await login(email, password);
+      await login(loginId, password);
       setLocation("/");
     } catch (err: any) {
-      setError(err.message || "Login failed. Check your name and password.");
+      setError(err.message || "Login failed. Check your user name and password.");
     } finally {
       setLoading(false);
     }
@@ -65,22 +72,23 @@ export default function Login() {
         }}
       >
         <h2 className="text-2xl font-black text-white mb-1">Welcome back</h2>
-        <p className="text-white/40 text-sm mb-7">Sign in with your email and password</p>
+        <p className="text-white/40 text-sm mb-7">Sign in with your user name and password</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email field */}
+          {/* User Name field */}
           <div>
             <label className="text-xs text-white/50 font-bold uppercase tracking-wider mb-2 block">
-              Email
+              User Name
             </label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="Enter your user name"
                 required
+                autoComplete="off"
                 className="w-full pl-11 pr-4 py-3.5 rounded-xl text-white text-sm font-medium placeholder:text-white/20 outline-none border transition-all"
                 style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)" }}
                 onFocus={(e) => {
@@ -108,6 +116,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
+                autoComplete="new-password"
                 className="w-full pl-11 pr-12 py-3.5 rounded-xl text-white text-sm font-medium placeholder:text-white/20 outline-none border transition-all"
                 style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)" }}
                 onFocus={(e) => {

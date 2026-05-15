@@ -49,7 +49,7 @@ async function buildAuthUser(firebaseUser: FirebaseUser): Promise<AuthUser> {
   return {
     id: firebaseUser.uid,
     name: userDoc?.name || firebaseUser.displayName || "User",
-    email: firebaseUser.email || "",
+    email: userDoc?.email || firebaseUser.email || "",
     lifestyle: (healthDetails as Lifestyle) || {},
     onboardingDone: userDoc?.onboardingDone ?? false,
     createdAt: userDoc?.createdAt || firebaseUser.metadata.creationTime || new Date().toISOString(),
@@ -112,22 +112,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authUser);
   }
 
-  async function register(name: string, email: string, password: string): Promise<AuthUser> {
+  async function register(name: string, realEmail: string, password: string): Promise<AuthUser> {
+    // We use a name-based ID for authentication to allow Name-only login
+    const authEmail = name.toLowerCase().trim().replace(/\s+/g, ".") + "@sumoguard.io";
+
     // Prevent onAuthStateChanged from racing with the Firestore write below
     skipNextAuthChange.current = true;
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const cred = await createUserWithEmailAndPassword(auth, authEmail, password);
     const now = new Date().toISOString();
+    
     await setUserDoc(cred.user.uid, {
       name,
-      email,
+      email: realEmail, // Store the real email in Firestore
       lifestyle: {},
       onboardingDone: false,
       createdAt: now,
     });
+
     const authUser: AuthUser = {
       id: cred.user.uid,
       name,
-      email,
+      email: realEmail, // Use the real email for the display
       lifestyle: {},
       onboardingDone: false,
       createdAt: now,

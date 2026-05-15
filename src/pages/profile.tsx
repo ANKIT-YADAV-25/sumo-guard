@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import {
   User, Ruler, Weight, Calendar, Activity, Leaf, Cigarette, Wine, Beer,
-  CheckCircle, Edit3, Save, X, Shield, LogOut,
+  CheckCircle, Edit3, Save, X, Shield, LogOut, Mail,
 } from "lucide-react";
 
 const QUALITY_COLOR = (v: number, low: number, high: number) =>
@@ -86,10 +86,10 @@ export default function Profile() {
           setEditing(false);
         },
         onError: (err: any) => {
-          toast({ 
-            title: "Error saving profile", 
-            description: err.message, 
-            variant: "destructive" 
+          toast({
+            title: "Error saving profile",
+            description: err.message,
+            variant: "destructive"
           });
         }
       }
@@ -158,7 +158,6 @@ export default function Profile() {
           {/* Name + email */}
           <div className="flex-1">
             <h3 className="text-xl font-black text-white leading-tight">{user?.name || form.name || "User"}</h3>
-            <p className="text-xs text-white/40 font-medium mt-0.5">{user?.email}</p>
             <div className="flex items-center gap-1.5 mt-2">
               <div className="w-2 h-2 rounded-full bg-green-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.6)" }} />
               <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Active member</span>
@@ -327,7 +326,14 @@ export default function Profile() {
           <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>
             <User size={14} />
           </div>
-          <span className="text-xs text-white/40 font-bold flex-1">Email</span>
+          <span className="text-xs text-white/40 font-bold flex-1">User Name</span>
+          <span className="text-sm font-black text-white">{user?.name || "—"}</span>
+        </div>
+        <div className="flex items-center gap-3 py-2">
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>
+            <Mail size={14} />
+          </div>
+          <span className="text-xs text-white/40 font-bold flex-1">Account Email</span>
           <span className="text-sm font-black text-white">{user?.email || "—"}</span>
         </div>
         <div className="flex items-center gap-3 py-2">
